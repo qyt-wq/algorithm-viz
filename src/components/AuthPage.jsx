@@ -11,15 +11,17 @@ export default function AuthPage({ onLogin }) {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
   const [loading, setLoading] = useState(false);
 
   // 切换登录/注册模式
   const switchMode = (newMode) => {
     setMode(newMode);
-    setUsername('');
+    if (newMode === 'register') setUsername('');
     setPassword('');
     setConfirmPassword('');
     setError('');
+    setSuccessMsg('');
   };
 
   // 客户端输入校验
@@ -61,9 +63,17 @@ export default function AuthPage({ onLogin }) {
         return;
       }
 
-      // 登录/注册成功 — 保存 token，回调通知父组件
-      localStorage.setItem('auth_token', data.token);
-      onLogin(data.username);
+      if (mode === 'register') {
+        // 注册成功 → 跳转到登录界面，预填用户名
+        setSuccessMsg(`注册成功！请使用账号 "${data.username}" 登录`);
+        setMode('login');
+        setPassword('');
+        setConfirmPassword('');
+      } else {
+        // 登录成功 → 保存 token，进入系统
+        localStorage.setItem('auth_token', data.token);
+        onLogin(data.username);
+      }
     } catch {
       setError('无法连接服务器，请确认后端服务已启动');
     } finally {
@@ -140,6 +150,7 @@ export default function AuthPage({ onLogin }) {
             </div>
           )}
 
+          {successMsg && <div className="auth-success-msg">{successMsg}</div>}
           {error && <div className="auth-error-msg">{error}</div>}
 
           <button className="auth-submit-btn" type="submit" disabled={loading}>
