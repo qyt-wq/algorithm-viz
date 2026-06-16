@@ -1,5 +1,6 @@
 import { useRef, useEffect, useState, useMemo } from 'react';
 import { CODE_LANGUAGES, getCodeState } from '../algorithms/registry';
+import { tokenize } from '../utils/syntaxHighlight';
 
 export default function CodePanel({ algorithm, stepType, hasSteps }) {
   const listRef = useRef(null);
@@ -20,12 +21,15 @@ export default function CodePanel({ algorithm, stepType, hasSteps }) {
     }
   }, [highlightIndex]);
 
+  // 是否为真实代码语言（需要语法高亮）
+  const isCodeLang = activeLang !== 'pseudocode';
+
   if (!hasSteps) {
     return (
       <aside className="code-panel">
         <div className="code-panel-header">📝 代码参考</div>
         <div className="code-panel-body" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <span style={{ color: '#505570', fontSize: '12px' }}>执行算法后显示</span>
+          <span className="code-placeholder">执行算法后显示</span>
         </div>
       </aside>
     );
@@ -58,11 +62,19 @@ export default function CodePanel({ algorithm, stepType, hasSteps }) {
               className={`code-line ${idx === highlightIndex ? 'highlight' : ''}`}
             >
               <span className="code-line-num">{idx + 1}</span>
-              <span>{line}</span>
+              <span>
+                {isCodeLang
+                  ? tokenize(line, activeLang).map((t, ti) => (
+                      <span key={ti} className={`token-${t.type}`}>
+                        {t.text}
+                      </span>
+                    ))
+                  : line}
+              </span>
             </div>
           ))
         ) : (
-          <div style={{ padding: '16px', color: '#505570', fontSize: 12, textAlign: 'center' }}>
+          <div className="code-placeholder-wrap">
             暂无{CODE_LANGUAGES.find((l) => l.key === activeLang)?.label}代码
           </div>
         )}

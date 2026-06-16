@@ -789,6 +789,24 @@ body {
   opacity: 0.6;
 }
 
+/* ---- 语法高亮 token 颜色 ---- */
+.token-keyword     { color: #6ab0f3; font-weight: 600; }  /* 关键字：亮蓝 */
+.token-type        { color: #ffd580; }                     /* 类型/内置：暖金 */
+.token-string      { color: #f0a040; }                     /* 字符串：橙色 */
+.token-comment     { color: #5cc98a; font-style: italic; } /* 注释：翠绿 */
+.token-number      { color: #c792ea; }                     /* 数字：淡紫 */
+.token-preprocessor { color: #e06060; }                    /* 预处理：红色 */
+.token-ident       { color: #d0d4e0; }                    /* 标识符：亮灰 */
+.token-plain        { color: #b0b8c8; }                    /* 普通符号：浅灰 */
+
+.code-placeholder,
+.code-placeholder-wrap {
+  padding: 16px;
+  color: var(--color-text-on-dark-muted);
+  font-size: 12px;
+  text-align: center;
+}
+
 /* ============================================
    算法信息面板
    ============================================ */
