@@ -21,9 +21,6 @@ export default function CodePanel({ algorithm, stepType, hasSteps }) {
     }
   }, [highlightIndex]);
 
-  // 是否为真实代码语言（需要语法高亮）
-  const isCodeLang = activeLang !== 'pseudocode';
-
   if (!hasSteps) {
     return (
       <aside className="code-panel">
@@ -36,7 +33,7 @@ export default function CodePanel({ algorithm, stepType, hasSteps }) {
   }
 
   return (
-    <aside className="code-panel">
+    <aside className="code-panel" data-lang={activeLang}>
       <div className="code-panel-header">
         <span>📝 {algorithm.name}</span>
       </div>
@@ -63,13 +60,11 @@ export default function CodePanel({ algorithm, stepType, hasSteps }) {
             >
               <span className="code-line-num">{idx + 1}</span>
               <span>
-                {isCodeLang
-                  ? tokenize(line, activeLang).map((t, ti) => (
-                      <span key={ti} className={`token-${t.type}`}>
-                        {t.text}
-                      </span>
-                    ))
-                  : line}
+                {tokenize(line, activeLang).map((t, ti) => (
+                  <span key={ti} className={`token-${t.type}`}>
+                    {t.text}
+                  </span>
+                ))}
               </span>
             </div>
           ))

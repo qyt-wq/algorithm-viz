@@ -27,6 +27,11 @@ const KEYWORDS = {
     'is', 'lambda', 'nonlocal', 'not', 'or', 'pass', 'raise', 'return', 'try',
     'while', 'with', 'yield', 'True', 'False', 'None',
   ]),
+  pseudocode: new Set([
+    'function', 'if', 'else', 'while', 'for', 'return', 'swap',
+    'in', 'to', 'and', 'or', 'not', 'each', 'true', 'false',
+    'do', 'then', 'end', 'repeat', 'until', 'break', 'continue',
+  ]),
 };
 
 // 常见类型/内置标识符（高亮为 type 色）
@@ -40,6 +45,12 @@ const TYPES = {
     'print', 'len', 'range', 'int', 'str', 'float', 'list', 'dict', 'set',
     'tuple', 'bool', 'enumerate', 'zip', 'map', 'filter', 'sorted', 'max', 'min',
     'abs', 'sum', 'type', 'isinstance', 'super', 'self', '__init__',
+  ]),
+  pseudocode: new Set([
+    'quickSort', 'partition', 'swap', 'arr', 'pivot',
+    'dijkstra', 'hanoi', 'dist', 'visited', 'prev', 'newDist',
+    'src', 'dst', 'aux', 'start', 'neighbors', 'vertices',
+    'G', 'V', 'E', 'w',
   ]),
 };
 
@@ -69,8 +80,8 @@ export function tokenize(line, lang) {
       continue;
     }
 
-    // C/Java: // 单行注释
-    if ((lang === 'c' || lang === 'java') && line[i] === '/' && line[i + 1] === '/') {
+    // C/Java/伪代码: // 单行注释
+    if ((lang === 'c' || lang === 'java' || lang === 'pseudocode') && line[i] === '/' && line[i + 1] === '/') {
       tokens.push({ text: line.slice(i), type: 'comment' });
       return tokens;
     }
