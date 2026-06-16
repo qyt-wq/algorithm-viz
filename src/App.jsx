@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { algorithmRegistry } from './algorithms/registry';
 import { getTestCases } from './data/testCases';
 import DataInput from './components/DataInput';
@@ -6,8 +6,15 @@ import VisualizationArea from './components/VisualizationArea';
 import CodePanel from './components/CodePanel';
 import PlaybackControls from './components/PlaybackControls';
 import InfoPanel from './components/InfoPanel';
+import AuthPage from './components/AuthPage';
+import './App.css';
 
 export default function App() {
+  // ---- 认证状态 ----
+  const [currentUser, setCurrentUser] = useState(null);
+  const [authChecking, setAuthChecking] = useState(true);
+
+  // ---- 算法状态 ----
   const [selectedAlgo, setSelectedAlgo] = useState(algorithmRegistry[0]);
   const [steps, setSteps] = useState([]);
   const [currentStepIndex, setCurrentStepIndex] = useState(-1);
@@ -17,6 +24,49 @@ export default function App() {
   const speedMap = { 1: 1200, 2: 600, 3: 200 };
   const [inputData, setInputData] = useState(null);
 
+  // ---- 启动时验证 JWT 令牌 ----
+  useEffect(() => {
+    const checkAuth = async () => {
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        setAuthChecking(false);
+        return;
+      }
+      try {
+        const res = await fetch('/api/auth/me', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setCurrentUser(data.username);
+        } else {
+          // 令牌过期或无效，清理
+          localStorage.removeItem('auth_token');
+        }
+      } catch {
+        // 服务器未启动时不清除 token，下次可能启动
+      }
+      setAuthChecking(false);
+    };
+    checkAuth();
+  }, []);
+
+  // ---- 登录 / 登出 ----
+  const handleLogin = useCallback((username) => {
+    setCurrentUser(username);
+  }, []);
+
+  const handleLogout = useCallback(() => {
+    localStorage.removeItem('auth_token');
+    setCurrentUser(null);
+    setIsRunning(false);
+    setCurrentStepIndex(-1);
+    setSteps([]);
+    setGraphData(null);
+    setInputData(null);
+  }, []);
+
+  // ---- 算法执行 ----
   const runAlgorithm = useCallback(
     (data) => {
       setInputData(data);
@@ -39,7 +89,6 @@ export default function App() {
 
   const currentStep = steps[currentStepIndex] || null;
 
-  // 播放回调
   const onPlaybackTick = useCallback(() => {
     setCurrentStepIndex((prev) => {
       if (prev >= steps.length - 1) {
@@ -66,11 +115,30 @@ export default function App() {
     setInputData(null);
   }, []);
 
-  const handleAlgoChange = useCallback((algo) => {
-    setSelectedAlgo(algo);
-    reset();
-  }, [reset]);
+  const handleAlgoChange = useCallback(
+    (algo) => {
+      setSelectedAlgo(algo);
+      reset();
+    },
+    [reset]
+  );
 
+  // ---- 加载中 ----
+  if (authChecking) {
+    return (
+      <div className="app-loading">
+        <div className="loading-spinner" />
+        <p>正在加载...</p>
+      </div>
+    );
+  }
+
+  // ---- 未登录 → 显示认证页面 ----
+  if (!currentUser) {
+    return <AuthPage onLogin={handleLogin} />;
+  }
+
+  // ---- 已登录 → 主应用 ----
   return (
     <div className="app">
       {/* 顶部导航栏 */}
@@ -91,6 +159,14 @@ export default function App() {
               <span className="algo-difficulty">({algo.difficulty})</span>
             </button>
           ))}
+        </div>
+
+        {/* 用户信息 + 登出 */}
+        <div className="app-user-area">
+          <span className="user-greeting">👤 {currentUser}</span>
+          <button className="btn btn-outline btn-sm" onClick={handleLogout}>
+            退出登录
+          </button>
         </div>
       </header>
 
@@ -145,7 +221,7 @@ export default function App() {
           )}
         </main>
 
-        {/* 右侧 — 代码面板（多语言 + 步骤追踪） */}
+        {/* 右侧 — 代码面板 */}
         <CodePanel
           algorithm={selectedAlgo}
           stepType={currentStep?.type}

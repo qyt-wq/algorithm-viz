@@ -1,0 +1,157 @@
+/* ============================================
+   认证页面 — Login / Register 表单
+   ============================================ */
+
+.auth-page-overlay {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: var(--color-bg);
+  padding: 20px;
+}
+
+.auth-card {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: 40px 36px;
+  width: 400px;
+  max-width: 90vw;
+}
+
+.auth-card-header {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.auth-card-subtitle {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  margin-bottom: 6px;
+  letter-spacing: 0.5px;
+}
+
+.auth-card-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+/* 模式切换标签 */
+.auth-mode-tabs {
+  display: flex;
+  gap: 2px;
+  margin-bottom: 24px;
+  background: var(--color-bg);
+  border-radius: 8px;
+  padding: 3px;
+}
+
+.auth-mode-tab {
+  flex: 1;
+  padding: 8px 0;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  transition: all 0.15s;
+}
+
+.auth-mode-tab.active {
+  background: white;
+  color: var(--color-primary);
+  box-shadow: var(--shadow-sm);
+  font-weight: 600;
+}
+
+/* 表单 */
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.auth-field-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  margin-bottom: 2px;
+}
+
+.auth-input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-family: var(--font-mono);
+  outline: none;
+  transition: border-color 0.15s;
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.auth-input:focus {
+  border-color: var(--color-primary);
+  background: white;
+}
+
+.auth-input.input-error {
+  border-color: var(--color-danger);
+}
+
+.auth-error-msg {
+  color: var(--color-danger);
+  font-size: 12px;
+  text-align: center;
+  padding: 8px 0;
+  background: #fef0f0;
+  border-radius: 6px;
+  border: 1px solid #fdd;
+}
+
+.auth-submit-btn {
+  width: 100%;
+  padding: 11px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--color-primary);
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  margin-top: 4px;
+}
+
+.auth-submit-btn:hover:not(:disabled) {
+  background: var(--color-primary-dark);
+}
+
+.auth-submit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 底部切换文字 */
+.auth-toggle-text {
+  text-align: center;
+  font-size: 12px;
+  color: var(--color-text-muted);
+  margin-top: 16px;
+}
+
+.auth-toggle-link {
+  color: var(--color-primary);
+  cursor: pointer;
+  font-weight: 500;
+  margin-left: 2px;
+}
+
+.auth-toggle-link:hover {
+  text-decoration: underline;
+}
