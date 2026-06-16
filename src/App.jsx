@@ -14,6 +14,23 @@ export default function App() {
   const [currentUser, setCurrentUser] = useState(null);
   const [authChecking, setAuthChecking] = useState(true);
 
+  // ---- 画布主题 ----
+  const THEMES = [
+    { key: 'dark', label: '暗色', icon: '🌙' },
+    { key: 'light', label: '明亮', icon: '☀️' },
+    { key: 'ocean', label: '深蓝', icon: '🌊' },
+    { key: 'forest', label: '护眼', icon: '🌿' },
+    { key: 'sunset', label: '暖橙', icon: '🌅' },
+    { key: 'pixel', label: '像素', icon: '🕹️' },
+  ];
+  const [canvasTheme, setCanvasTheme] = useState(() => {
+    return localStorage.getItem('canvas_theme') || 'dark';
+  });
+  const handleThemeChange = (theme) => {
+    setCanvasTheme(theme);
+    localStorage.setItem('canvas_theme', theme);
+  };
+
   // ---- 算法状态 ----
   const [selectedAlgo, setSelectedAlgo] = useState(algorithmRegistry[0]);
   const [steps, setSteps] = useState([]);
@@ -140,7 +157,7 @@ export default function App() {
 
   // ---- 已登录 → 主应用 ----
   return (
-    <div className="app">
+    <div className="app" data-theme={canvasTheme}>
       {/* 顶部导航栏 */}
       <header className="app-header">
         <div className="app-brand">
@@ -161,8 +178,20 @@ export default function App() {
           ))}
         </div>
 
-        {/* 用户信息 + 登出 */}
+        {/* 主题切换 + 用户信息 + 登出 */}
         <div className="app-user-area">
+          <div className="theme-picker" title="切换画布背景">
+            {THEMES.map((t) => (
+              <button
+                key={t.key}
+                className={`theme-dot ${canvasTheme === t.key ? 'active' : ''}`}
+                onClick={() => handleThemeChange(t.key)}
+                title={t.label}
+              >
+                {t.icon}
+              </button>
+            ))}
+          </div>
           <span className="user-greeting">👤 {currentUser}</span>
           <button className="btn btn-outline btn-sm" onClick={handleLogout}>
             退出登录

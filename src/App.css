@@ -27,6 +27,68 @@
   --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', 'Monaco', monospace;
 }
 
+/* ============================================
+   主题 — 可视化画布背景切换
+   ============================================ */
+
+/* 默认：暗色经典 */
+[data-theme="dark"] {
+  --color-canvas-bg: #1a1d2e;
+  --color-canvas-grid: rgba(255, 255, 255, 0.04);
+  --color-bg: #f5f6fa;
+  --color-bar-dark: #232740;
+  --color-code-panel: #1e2235;
+  --color-text-on-dark: #c0c8d8;
+  --color-text-on-dark-muted: #7880a0;
+}
+
+/* 明亮简洁 */
+[data-theme="light"] {
+  --color-canvas-bg: #eef1f5;
+  --color-canvas-grid: rgba(0, 0, 0, 0.06);
+  --color-bg: #ffffff;
+  --color-bar-dark: #e8ecf0;
+  --color-code-panel: #f0f2f5;
+  --color-text-on-dark: #3a4050;
+  --color-text-on-dark-muted: #6a7080;
+}
+
+/* 深空蓝 */
+[data-theme="ocean"] {
+  --color-canvas-bg: #0a1628;
+  --color-canvas-grid: rgba(100, 180, 255, 0.05);
+  --color-bg: #f0f4f8;
+  --color-bar-dark: #0d1f3c;
+  --color-code-panel: #0c1a30;
+}
+
+/* 护眼绿 */
+[data-theme="forest"] {
+  --color-canvas-bg: #1a2a1e;
+  --color-canvas-grid: rgba(100, 200, 100, 0.04);
+  --color-bg: #f4f7f4;
+  --color-bar-dark: #1e3024;
+  --color-code-panel: #1a2c1e;
+}
+
+/* 暖橙 */
+[data-theme="sunset"] {
+  --color-canvas-bg: #2a1a14;
+  --color-canvas-grid: rgba(255, 160, 80, 0.05);
+  --color-bg: #faf6f4;
+  --color-bar-dark: #302018;
+  --color-code-panel: #2c1c16;
+}
+
+/* 像素风 */
+[data-theme="pixel"] {
+  --color-canvas-bg: #0d0d0d;
+  --color-canvas-grid: rgba(0, 255, 100, 0.06);
+  --color-bg: #1a1a1a;
+  --color-bar-dark: #111111;
+  --color-code-panel: #0f0f0f;
+}
+
 *,
 *::before,
 *::after {
@@ -89,6 +151,41 @@ body {
   color: var(--color-text-secondary);
   font-weight: 500;
   white-space: nowrap;
+}
+
+/* --- 主题切换器 --- */
+.theme-picker {
+  display: flex;
+  gap: 3px;
+  margin-right: 6px;
+  padding-right: 8px;
+  border-right: 1px solid var(--color-border-light);
+}
+
+.theme-dot {
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 50%;
+  background: transparent;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.theme-dot:hover {
+  background: var(--color-bg);
+  transform: scale(1.15);
+}
+
+.theme-dot.active {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
 }
 
 /* ============================================
@@ -166,7 +263,7 @@ body {
 .code-panel {
   width: 280px;
   min-width: 280px;
-  background: #1e2235;
+  background: var(--color-code-panel);
   border-left: 1px solid rgba(255, 255, 255, 0.08);
   display: flex;
   flex-direction: column;
@@ -414,7 +511,7 @@ body {
   align-items: center;
   gap: 8px;
   padding: 8px 16px;
-  background: #232740;
+  background: var(--color-bar-dark);
   border-top: 1px solid rgba(255, 255, 255, 0.06);
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   flex-shrink: 0;
@@ -427,7 +524,7 @@ body {
   border: none;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.08);
-  color: #c0c8d8;
+  color: var(--color-text-on-dark);
   font-size: 13px;
   cursor: pointer;
   transition: all 0.15s;
@@ -482,7 +579,7 @@ body {
 
 .progress-label {
   font-size: 11px;
-  color: #7880a0;
+  color: var(--color-text-on-dark-muted);
   font-family: var(--font-mono);
   white-space: nowrap;
   min-width: 56px;
@@ -500,7 +597,7 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 4px;
   background: transparent;
-  color: #7880a0;
+  color: var(--color-text-on-dark-muted);
   font-size: 10px;
   cursor: pointer;
   transition: all 0.15s;
@@ -533,7 +630,7 @@ body {
 
 .viz-placeholder {
   text-align: center;
-  color: #505570;
+  color: var(--color-text-on-dark-muted);
 }
 
 .viz-placeholder .ph-icon {
@@ -544,13 +641,13 @@ body {
 
 .viz-placeholder h2 {
   font-size: 20px;
-  color: #7880a0;
+  color: var(--color-text-on-dark);
   margin-bottom: 6px;
 }
 
 .viz-placeholder p {
   font-size: 13px;
-  color: #505570;
+  color: var(--color-text-on-dark-muted);
   margin-bottom: 20px;
 }
 
@@ -569,14 +666,14 @@ body {
   background: rgba(255, 255, 255, 0.04);
   border-radius: 16px;
   font-size: 12px;
-  color: #7880a0;
+  color: var(--color-text-on-dark-muted);
   border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 /* --- 步骤描述条 --- */
 .step-info-bar {
   padding: 8px 20px;
-  background: #232740;
+  background: var(--color-bar-dark);
   border-top: 1px solid rgba(255, 255, 255, 0.06);
   display: flex;
   align-items: center;
@@ -604,7 +701,7 @@ body {
 
 .step-info-text {
   font-size: 13px;
-  color: #c0c8d8;
+  color: var(--color-text-on-dark);
   flex: 1;
 }
 
@@ -616,7 +713,7 @@ body {
   padding: 10px 16px;
   font-size: 13px;
   font-weight: 600;
-  color: #c0c8d8;
+  color: var(--color-text-on-dark);
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   display: flex;
   align-items: center;
@@ -639,7 +736,7 @@ body {
   border: none;
   border-radius: 4px;
   background: transparent;
-  color: #6a7090;
+  color: var(--color-text-on-dark-muted);
   font-size: 10px;
   font-weight: 500;
   cursor: pointer;
@@ -649,7 +746,7 @@ body {
 }
 
 .code-lang-tab:hover {
-  color: #a0a8c0;
+  color: var(--color-text-on-dark);
   background: rgba(255, 255, 255, 0.04);
 }
 
@@ -671,24 +768,25 @@ body {
   font-family: var(--font-mono);
   font-size: 12px;
   line-height: 1.7;
-  color: #6a7090;
+  color: var(--color-text-on-dark-muted);
   transition: all 0.2s;
   border-left: 3px solid transparent;
 }
 
 .code-line.highlight {
   background: rgba(74, 144, 217, 0.12);
-  color: #e0e4f0;
+  color: var(--color-text-on-dark);
   border-left-color: var(--color-primary);
 }
 
 .code-line-num {
   min-width: 28px;
-  color: #404860;
+  color: var(--color-text-on-dark-muted);
   font-size: 10px;
   text-align: right;
   margin-right: 12px;
   user-select: none;
+  opacity: 0.6;
 }
 
 /* ============================================
@@ -778,12 +876,12 @@ body {
   font-size: 11px;
   font-weight: 600;
   font-family: var(--font-mono);
-  color: #c0c8d8;
+  color: var(--color-text-on-dark);
 }
 
 .bar-index {
   font-size: 10px;
-  color: #505570;
+  color: var(--color-text-on-dark-muted);
   font-family: var(--font-mono);
   margin-top: 2px;
 }
@@ -802,7 +900,7 @@ body {
   align-items: center;
   gap: 5px;
   font-size: 11px;
-  color: #7880a0;
+  color: var(--color-text-on-dark-muted);
 }
 
 .legend-dot {
@@ -855,7 +953,7 @@ body {
   background: rgba(74, 144, 217, 0.12);
   border-radius: 20px;
   font-size: 13px;
-  color: #c0c8d8;
+  color: var(--color-text-on-dark);
   border: 1px solid rgba(74, 144, 217, 0.2);
 }
 
@@ -884,7 +982,7 @@ body {
 .peg-label {
   font-size: 12px;
   font-weight: 600;
-  color: #7880a0;
+  color: var(--color-text-on-dark-muted);
 }
 
 .peg-stand {
@@ -943,7 +1041,7 @@ body {
 
 .peg-count {
   font-size: 10px;
-  color: #505570;
+  color: var(--color-text-on-dark-muted);
 }
 
 .disk-moving {
