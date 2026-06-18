@@ -14,6 +14,10 @@ export default function App() {
   const [currentUser, setCurrentUser] = useState(null);
   const [authChecking, setAuthChecking] = useState(true);
 
+  // ---- 移动端菜单状态 ----
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [codePanelOpen, setCodePanelOpen] = useState(false);
+
   // ---- 画布主题 ----
   const THEMES = [
     { key: 'dark', label: '暗色', icon: '🌙' },
@@ -167,6 +171,15 @@ export default function App() {
     <div className="app" data-theme={canvasTheme}>
       {/* 顶部导航栏 */}
       <header className="app-header">
+        {/* 移动端汉堡菜单按钮 */}
+        <button
+          className="hamburger-btn"
+          onClick={() => { setSidebarOpen(!sidebarOpen); setCodePanelOpen(false); }}
+          aria-label="切换菜单"
+        >
+          <span className={`hamburger-line ${sidebarOpen ? 'open' : ''}`} />
+        </button>
+
         <div className="app-brand">
           <span className="app-logo">🧮</span>
           <span className="app-title">算法过程可视化系统</span>
@@ -199,7 +212,7 @@ export default function App() {
               </button>
             ))}
           </div>
-          <span className="user-greeting">👤 {currentUser}</span>
+          <span className="user-greeting">👤 <span className="user-greeting-name">{currentUser}</span></span>
           <button className="btn btn-outline btn-sm" onClick={handleLogout}>
             退出登录
           </button>
@@ -208,11 +221,14 @@ export default function App() {
 
       {/* 主体 */}
       <div className="app-body">
+        {/* 移动端侧边栏遮罩 */}
+        {sidebarOpen && <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)} />}
+
         {/* 左侧面板 */}
-        <aside className="side-panel">
+        <aside className={`side-panel ${sidebarOpen ? 'side-panel-open' : ''}`}>
           <DataInput
             algorithm={selectedAlgo}
-            onRun={runAlgorithm}
+            onRun={(data) => { runAlgorithm(data); setSidebarOpen(false); }}
             disabled={isRunning}
             testCases={getTestCases(selectedAlgo.id)}
           />
@@ -255,14 +271,27 @@ export default function App() {
               <span className="step-info-text">{currentStep.description}</span>
             </div>
           )}
+
+          {/* 移动端 — 代码面板切换按钮 */}
+          {steps.length > 0 && (
+            <button
+              className="mobile-code-toggle"
+              onClick={() => { setCodePanelOpen(!codePanelOpen); setSidebarOpen(false); }}
+            >
+              {codePanelOpen ? '✕ 隐藏代码' : '📝 查看代码'}
+            </button>
+          )}
         </main>
 
         {/* 右侧 — 代码面板 */}
-        <CodePanel
-          algorithm={selectedAlgo}
-          stepType={currentStep?.type}
-          hasSteps={steps.length > 0}
-        />
+        <div className={`code-panel-wrapper ${codePanelOpen ? 'code-panel-open' : ''}`}>
+          {codePanelOpen && <div className="code-panel-overlay" onClick={() => setCodePanelOpen(false)} />}
+          <CodePanel
+            algorithm={selectedAlgo}
+            stepType={currentStep?.type}
+            hasSteps={steps.length > 0}
+          />
+        </div>
       </div>
     </div>
   );
