@@ -21,24 +21,6 @@ export default function HanoiViz({ step, numDisks }) {
 
   return (
     <div className="hanoi-viz">
-      {/* 移动信息横幅 */}
-      {moveInfo && (
-        <div className="hanoi-move-info" style={{
-          display: 'flex', alignItems: 'center', gap: 12, justifyContent: 'center',
-          marginBottom: 24, padding: '6px 18px', background: 'rgba(74,144,217,0.12)',
-          borderRadius: 20, fontSize: 13, color: '#c0c8d8',
-          border: '1px solid rgba(74,144,217,0.2)',
-        }}>
-          <span style={{ fontWeight: 700, color: '#4a90d9', fontFamily: 'var(--font-mono)', fontSize: 14 }}>
-            第 {moveInfo.moveNumber} 步
-          </span>
-          <span>
-            盘子 <strong style={{ color: getDiskColor(moveInfo.disk) }}>{moveInfo.disk}</strong>
-            {' '}从 {PEG_LABELS[moveInfo.from]} → {PEG_LABELS[moveInfo.to]}
-          </span>
-        </div>
-      )}
-
       {/* 三根柱子 — 底座在下，柱子从底部向上延伸 */}
       <div className="pegs-container" style={{
         display: 'flex', justifyContent: 'space-around', alignItems: 'flex-end',

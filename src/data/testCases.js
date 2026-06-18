@@ -31,17 +31,61 @@ export const testCases = {
   dijkstra: [
     {
       id: 'dj-tc1',
-      name: '从节点A出发',
+      name: '从节点A出发（内置图）',
       input: 'A',
       description: '从中心节点A出发，覆盖多条不同权重的路径',
       expectedResult: 'A→C→B→E→F→D→G（距离依次为 0, 2, 3, 6, 8, 8, 9）',
     },
     {
       id: 'dj-tc2',
-      name: '从节点D出发',
+      name: '从节点D出发（内置图）',
       input: 'D',
       description: '从底部节点D出发，测试不同起点的路径计算',
       expectedResult: 'D到各节点的最短路径',
+    },
+    {
+      id: 'dj-tc3',
+      name: '简单三角图（自定义）',
+      input: {
+        startNode: 'A',
+        graph: {
+          nodes: [
+            { id: 'A', x: 200, y: 80 },
+            { id: 'B', x: 100, y: 250 },
+            { id: 'C', x: 300, y: 250 },
+          ],
+          edges: [
+            { from: 'A', to: 'B', weight: 3 },
+            { from: 'A', to: 'C', weight: 6 },
+            { from: 'B', to: 'C', weight: 2 },
+          ],
+        },
+      },
+      description: '3节点三角图，验证简单的路径选择（A→B→C 比 A→C 短）',
+      expectedResult: 'A→B=3, A→C=5（经B）',
+    },
+    {
+      id: 'dj-tc4',
+      name: '直线链（自定义）',
+      input: {
+        startNode: 'A',
+        graph: {
+          nodes: [
+            { id: 'A', x: 80, y: 250 },
+            { id: 'B', x: 160, y: 250 },
+            { id: 'C', x: 240, y: 250 },
+            { id: 'D', x: 320, y: 250 },
+          ],
+          edges: [
+            { from: 'A', to: 'B', weight: 2 },
+            { from: 'B', to: 'C', weight: 3 },
+            { from: 'C', to: 'D', weight: 1 },
+            { from: 'A', to: 'D', weight: 10 },
+          ],
+        },
+      },
+      description: '4节点链式图+一条直接长边，验证算法不会走捷径长边',
+      expectedResult: 'A→B=2, A→C=5, A→D=6（经B,C），而非 A→D=10',
     },
   ],
 

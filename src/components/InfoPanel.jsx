@@ -41,7 +41,9 @@ export default function InfoPanel({ algorithm, currentStep, inputData }) {
         <>
           <h4 className="section-subtitle">输入数据</h4>
           <p className="info-text" style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', background: 'var(--color-bg)', padding: '4px 8px', borderRadius: '4px' }}>
-            {Array.isArray(inputData) ? `[${inputData.join(', ')}]` : String(inputData)}
+            {typeof inputData === 'object' && inputData.startNode
+              ? `起始: ${inputData.startNode}, ${inputData.graph.nodes.length}节点/${inputData.graph.edges.length}边`
+              : Array.isArray(inputData) ? `[${inputData.join(', ')}]` : String(inputData)}
           </p>
         </>
       )}

@@ -87,7 +87,7 @@ export const algorithmRegistry = [
     difficulty: '中',
     engine: dijkstraEngine,
     inputType: 'graph',
-    inputHint: '系统使用内置图结构，您可以选择起始节点',
+    inputHint: '选择起始节点（A-G），或切换到"自定义图"模式定义自己的图',
     defaultInput: 'A',
     randomCount: null,
     randomRange: null,

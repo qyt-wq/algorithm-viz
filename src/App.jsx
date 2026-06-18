@@ -91,7 +91,14 @@ export default function App() {
       setCurrentStepIndex(-1);
       let result;
       if (selectedAlgo.id === 'dijkstra') {
-        result = selectedAlgo.engine(data);
+        // 支持两种调用方式：
+        // 1. 字符串 — 内置图 + 起始节点（如 "A"）
+        // 2. 对象 — 自定义图 { startNode: "A", graph: { nodes, edges } }
+        if (typeof data === 'object' && data.graph) {
+          result = selectedAlgo.engine(data.startNode, data.graph);
+        } else {
+          result = selectedAlgo.engine(data);
+        }
         setSteps(result.steps);
         setGraphData(result.graph);
       } else {

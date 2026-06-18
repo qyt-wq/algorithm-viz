@@ -951,10 +951,26 @@ body {
   color: var(--color-text-on-dark-muted);
 }
 
+.legend-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
 .legend-dot {
   width: 10px;
   height: 10px;
   border-radius: 2px;
+}
+
+/* 空状态 */
+.empty-viz {
+  color: var(--color-text-on-dark-muted);
+  font-size: 14px;
+  padding: 32px;
+  text-align: center;
 }
 
 /* ============================================
@@ -1104,6 +1120,70 @@ body {
 
 .hanoi-move-info {
   /* 已通过内联样式处理，保留类名用于扩展 */
+}
+
+/* ============================================
+   自定义图编辑器（Dijkstra）
+   ============================================ */
+
+.graph-editor {
+  margin-bottom: 8px;
+}
+
+.graph-editor-section {
+  margin-bottom: 8px;
+}
+
+.graph-editor-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  margin-bottom: 4px;
+}
+
+.graph-editor-format {
+  font-weight: 400;
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+.graph-editor-hint {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  font-style: italic;
+  margin-top: 2px;
+}
+
+.graph-edge-textarea {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1.5px solid var(--color-border);
+  border-radius: 6px;
+  font-size: 12px;
+  font-family: var(--font-mono);
+  outline: none;
+  resize: vertical;
+  min-height: 80px;
+  background: var(--color-bg);
+  line-height: 1.7;
+  transition: border-color 0.15s;
+}
+
+.graph-edge-textarea:focus {
+  border-color: var(--color-primary);
+  background: white;
+}
+
+.graph-edge-textarea.input-error {
+  border-color: var(--color-danger);
+}
+
+.graph-node-list {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-top: 4px;
 }
 
 /* ============================================

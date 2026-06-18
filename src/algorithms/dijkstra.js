@@ -1,10 +1,11 @@
 /**
  * Dijkstra 最短路径算法引擎
  * 返回完整的步骤序列，每步包含节点距离状态、访问状态、描述等
+ * 支持使用内置图或自定义图结构
  */
 
 // 内置图结构（用于可视化）
-const DEFAULT_GRAPH = {
+export const DEFAULT_GRAPH = {
   nodes: [
     { id: 'A', x: 200, y: 60 },
     { id: 'B', x: 100, y: 180 },
@@ -30,11 +31,34 @@ const DEFAULT_GRAPH = {
 };
 
 /**
+ * 自动布局 — 将节点均匀分布在圆形上
+ * @param {string[]} nodeIds - 节点ID列表
+ * @returns {{ id: string, x: number, y: number }[]}
+ */
+export function autoLayout(nodeIds) {
+  const sorted = [...nodeIds].sort();
+  const count = sorted.length;
+  const cx = 200, cy = 250;
+  const radius = count <= 4 ? 100 : count <= 7 ? 140 : Math.min(180, 50 + count * 15);
+  const startAngle = -Math.PI / 2; // 从顶部开始
+
+  return sorted.map((id, i) => {
+    const angle = startAngle + (2 * Math.PI * i) / count;
+    return {
+      id,
+      x: Math.round(cx + radius * Math.cos(angle)),
+      y: Math.round(cy + radius * Math.sin(angle)),
+    };
+  });
+}
+
+/**
  * @param {string} startNodeId - 起始节点ID（如 'A'）
+ * @param {object} [graphData] - 可选的自定义图数据 { nodes, edges }，不传则使用内置图
  * @returns {{ steps: Step[], graph: object }} 步骤序列和使用的图结构
  */
-export function dijkstraEngine(startNodeId) {
-  const graph = DEFAULT_GRAPH;
+export function dijkstraEngine(startNodeId, graphData) {
+  const graph = graphData || DEFAULT_GRAPH;
   const steps = [];
   const nodes = graph.nodes.map((n) => n.id);
 

@@ -17,6 +17,21 @@ export default function DijkstraViz({ step, graphData, steps, currentIndex }) {
 
   const { nodes, edges } = graphData;
 
+  // 动态计算 viewBox（根据节点位置自适应）
+  const viewBox = useMemo(() => {
+    if (!nodes || nodes.length === 0) return '0 0 400 500';
+    const padding = 40;
+    const xs = nodes.map(n => n.x);
+    const ys = nodes.map(n => n.y);
+    const minX = Math.min(...xs) - padding;
+    const minY = Math.min(...ys) - padding;
+    const maxX = Math.max(...xs) + padding;
+    const maxY = Math.max(...ys) + padding;
+    const w = Math.max(400, maxX - minX);
+    const h = Math.max(500, maxY - minY);
+    return `${minX} ${minY} ${w} ${h}`;
+  }, [nodes]);
+
   // 确定边颜色
   const getEdgeColor = (from, to) => {
     const isHighlighted = step.highlightedEdges?.some(
@@ -69,7 +84,7 @@ export default function DijkstraViz({ step, graphData, steps, currentIndex }) {
 
   return (
     <div className="dijkstra-viz">
-      <svg viewBox="0 0 400 500" className="graph-svg">
+      <svg viewBox={viewBox} className="graph-svg">
         {/* 边 */}
         {edges.map((edge, idx) => {
           const fromNode = nodes.find((n) => n.id === edge.from);
