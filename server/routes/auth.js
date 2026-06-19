@@ -55,6 +55,13 @@ router.post('/register', async (req, res) => {
     );
 
     const user = { id: result.insertId, username };
+
+    // 记录首次登录
+    await pool.query(
+      'INSERT INTO login_records (user_id) VALUES (?)',
+      [user.id]
+    );
+
     const token = generateToken(user);
 
     res.status(201).json({
@@ -94,6 +101,12 @@ router.post('/login', async (req, res) => {
     if (!isMatch) {
       return res.status(401).json({ error: '密码错误' });
     }
+
+    // 记录登录
+    await pool.query(
+      'INSERT INTO login_records (user_id) VALUES (?)',
+      [user.id]
+    );
 
     const token = generateToken(user);
 

@@ -7,6 +7,8 @@ import CodePanel from './components/CodePanel';
 import PlaybackControls from './components/PlaybackControls';
 import InfoPanel from './components/InfoPanel';
 import StepList from './components/StepList';
+import StatsPanel from './components/StatsPanel';
+import SessionTimer from './components/SessionTimer';
 import AuthPage from './components/AuthPage';
 import { useSwipeGesture } from './utils/useSwipeGesture';
 import './App.css';
@@ -53,6 +55,9 @@ export default function App() {
   const [rightSteps, setRightSteps] = useState([]);
   const [rightStepIndex, setRightStepIndex] = useState(-1);
   const [rightGraphData, setRightGraphData] = useState(null);
+
+  // ---- 学习统计刷新键 ----
+  const [statsRefreshKey, setStatsRefreshKey] = useState(0);
 
   // ---- 可对比算法列表（同 inputType）----
   const comparableAlgos = algorithmRegistry.filter(
@@ -131,6 +136,25 @@ export default function App() {
           setGraphData(null);
         }
         setCurrentStepIndex(0);
+
+        // 记录学习数据（后台静默发送）
+        const stepsCount = Array.isArray(result) ? result.length : (result.steps?.length || 0);
+        const token = localStorage.getItem('auth_token');
+        if (token) {
+          fetch('/api/stats/learning', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              algorithmId: selectedAlgo.id,
+              algorithmName: selectedAlgo.name,
+              stepsCount,
+            }),
+          }).catch(() => {}); // 静默失败
+          setStatsRefreshKey((k) => k + 1);
+        }
 
         // 对比算法
         if (compareMode && compareAlgo) {
@@ -368,6 +392,7 @@ export default function App() {
               </button>
             ))}
           </div>
+          <SessionTimer />
           <span className="user-greeting">👤 <span className="user-greeting-name">{currentUser}</span></span>
           <button className="btn btn-outline btn-sm" onClick={handleLogout}>退出登录</button>
         </div>
@@ -450,6 +475,8 @@ export default function App() {
           </div>
 
           <InfoPanel algorithm={selectedAlgo} currentStep={currentStep} inputData={inputData} />
+
+          <StatsPanel refreshKey={statsRefreshKey} />
 
           {/* 步骤列表 — 桌面端可见 */}
           {steps.length > 0 && (
