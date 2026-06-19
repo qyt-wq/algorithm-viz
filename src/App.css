@@ -582,6 +582,52 @@ body {
   transition: width 0.3s ease;
 }
 
+/* 可拖动进度条 */
+.progress-slider {
+  flex: 1;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+  outline: none;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.progress-slider:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.progress-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  border: 2px solid white;
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+
+.progress-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+.progress-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  border: 2px solid white;
+  cursor: pointer;
+}
+
+.progress-slider:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
 .progress-label {
   font-size: 11px;
   color: var(--color-text-on-dark-muted);
@@ -884,7 +930,86 @@ body {
 }
 
 /* ============================================
-   快速排序 — 柱状图
+   算法对比模式
+   ============================================ */
+
+.compare-toggle-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 12px;
+}
+
+.compare-toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.compare-toggle-label input[type="checkbox"] {
+  accent-color: var(--color-primary);
+  width: 15px;
+  height: 15px;
+  cursor: pointer;
+}
+
+.compare-algo-select {
+  padding: 4px 6px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  font-size: 11px;
+  background: white;
+  color: var(--color-text);
+  outline: none;
+}
+
+.compare-no-match {
+  font-size: 10px;
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+/* 并排布局 */
+.compare-area {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.compare-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.compare-divider {
+  width: 3px;
+  background: linear-gradient(to bottom, transparent, var(--color-primary), transparent);
+  flex-shrink: 0;
+  opacity: 0.4;
+}
+
+.compare-panel-label {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-on-dark);
+  padding: 5px 8px;
+  background: var(--color-bar-dark);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+}
+
+/* ============================================
+   排序算法 — 柱状图（共用）
    ============================================ */
 
 .quicksort-viz {
@@ -939,6 +1064,30 @@ body {
   color: var(--color-text-on-dark-muted);
   font-family: var(--font-mono);
   margin-top: 2px;
+}
+
+/* --- 冒泡排序 & 归并排序 共享柱状图样式 --- */
+.bubblesort-viz,
+.mergesort-viz {
+  width: 100%;
+  max-width: 750px;
+}
+
+.pass-indicator {
+  text-align: center;
+  color: var(--color-text-on-dark);
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  font-family: var(--font-mono);
+}
+
+.merge-range-label {
+  text-align: center;
+  color: var(--color-text-on-dark-muted);
+  font-size: 11px;
+  font-family: var(--font-mono);
+  margin-bottom: 4px;
 }
 
 /* 图例 */
@@ -1002,6 +1151,83 @@ body {
 
 .graph-edge-line {
   transition: stroke 0.3s ease, stroke-width 0.3s ease;
+}
+
+/* ============================================
+   哈夫曼树
+   ============================================ */
+
+.huffman-viz {
+  width: 100%;
+  max-width: 800px;
+  contain: layout style;
+}
+
+.huffman-tree-svg {
+  width: 100%;
+  height: auto;
+  contain: layout style;
+}
+
+.huffman-node {
+  transition: fill 0.3s ease;
+}
+
+.huffman-node-merged {
+  animation: pulse-glow 0.5s ease;
+}
+
+/* 哈夫曼编码表 */
+.huffman-codes-table {
+  margin-top: 16px;
+  padding: 10px 14px;
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.huffman-codes-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-on-dark);
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.huffman-codes-grid {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.huffman-code-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  background: rgba(74, 144, 217, 0.1);
+  border-radius: 12px;
+  border: 1px solid rgba(74, 144, 217, 0.15);
+}
+
+.huffman-code-char {
+  font-size: 13px;
+  font-weight: 700;
+  color: #6ab0f3;
+  font-family: var(--font-mono);
+}
+
+.huffman-code-arrow {
+  font-size: 11px;
+  color: var(--color-text-on-dark-muted);
+}
+
+.huffman-code-value {
+  font-size: 12px;
+  font-weight: 600;
+  color: #5cc98a;
+  font-family: var(--font-mono);
 }
 
 /* ============================================
@@ -1268,16 +1494,30 @@ body {
    ============================================ */
 
 .hamburger-btn {
-  display: none;   /* 桌面端隐藏，移动端 flex */
+  display: none;
 }
 
 .mobile-code-toggle {
-  display: none;   /* 桌面端隐藏，移动端 block */
+  display: none;
+}
+
+.mobile-code-back-btn {
+  display: none;
 }
 
 .sidebar-overlay,
 .code-panel-overlay {
-  display: none;   /* 仅移动端显示 */
+  display: none;
+}
+
+/* 桌面端专用 — 始终显示 */
+.desktop-only {
+  /* default visible */
+}
+
+/* 移动端专用 — 桌面隐藏 */
+.mobile-only {
+  display: none;
 }
 
 /* 桌面端：代码面板正常显示 */
@@ -1384,16 +1624,51 @@ body {
 
   .top-algo-selector {
     gap: 3px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    flex-shrink: 1;
+    max-width: none;
+    padding-bottom: 2px;
+  }
+
+  .top-algo-selector::-webkit-scrollbar {
+    display: none;
   }
 
   .algo-select-btn {
     padding: 4px 8px;
     font-size: 11px;
     border-radius: 14px;
+    white-space: nowrap;
+    flex-shrink: 0;
   }
 
   .algo-difficulty {
     display: none;
+  }
+
+  /* 对比模式 — 移动端上下堆叠 */
+  .compare-area {
+    flex-direction: column;
+  }
+
+  .compare-divider {
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(to right, transparent, var(--color-primary), transparent);
+  }
+
+  .compare-panel {
+    flex: 0 0 auto;
+    min-height: 40vh;
+  }
+
+  .compare-panel-label {
+    font-size: 11px;
+    padding: 4px;
   }
 
   /* 用户区域 */
@@ -1419,6 +1694,51 @@ body {
 
   .user-greeting-name {
     display: none;
+  }
+
+  /* ---- 桌面端专用元素在移动端隐藏 ---- */
+  .desktop-only {
+    display: none !important;
+  }
+
+  /* ---- 移动端专用元素显示 ---- */
+  .mobile-only {
+    display: block;
+  }
+
+  .mobile-algo-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .mobile-theme-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .mobile-theme-btn {
+    padding: 5px 10px;
+    border: 1px solid var(--color-border);
+    border-radius: 14px;
+    background: transparent;
+    font-size: 11px;
+    cursor: pointer;
+    color: var(--color-text-secondary);
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+
+  .mobile-theme-btn:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+  }
+
+  .mobile-theme-btn.active {
+    background: var(--color-primary);
+    color: white;
+    border-color: var(--color-primary);
   }
 
   .app-user-area .btn-sm {
@@ -1469,12 +1789,16 @@ body {
     min-height: 0;
   }
 
-  /* ---- 播放控制栏：紧凑 ---- */
+  /* ---- 播放控制栏：紧凑 + 固定底部 ---- */
   .playback-bar {
+    position: sticky;
+    bottom: 0;
+    z-index: 20;
     padding: 6px 8px;
     gap: 4px;
     flex-wrap: wrap;
     justify-content: center;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.3);
   }
 
   .playback-btn {
@@ -1546,6 +1870,28 @@ body {
     font-size: 12px;
   }
 
+  /* ---- 移动端代码面板返回按钮 ---- */
+  .mobile-code-back-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 16px;
+    background: rgba(74, 144, 217, 0.12);
+    color: #6ab0f3;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+
+  .mobile-code-back-btn:hover {
+    background: rgba(74, 144, 217, 0.22);
+    border-color: rgba(74, 144, 217, 0.3);
+  }
+
   /* ---- 移动端代码切换按钮 ---- */
   .mobile-code-toggle {
     display: block;
@@ -1565,47 +1911,40 @@ body {
     background: rgba(74, 144, 217, 0.15);
   }
 
-  /* ---- 代码面板覆盖滑出 ---- */
+  /* ---- 代码面板：底部半屏滑出（与动画分屏显示）---- */
   .code-panel-wrapper {
     position: fixed;
-    top: 0;
+    top: 48px;
     right: 0;
     bottom: 0;
-    z-index: 45;
+    left: 0;
+    z-index: 35;
     pointer-events: none;
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .code-panel-wrapper.code-panel-open {
     pointer-events: auto;
+    transform: translateY(0);
   }
 
   .code-panel-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.4);
-    animation: fadeIn 0.2s ease;
+    display: none !important;  /* 无遮罩，动画区保持可见 */
   }
 
   .code-panel-wrapper > .code-panel {
-    display: none;
-    position: fixed;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    width: 300px;
-    max-width: 85vw;
-    z-index: 46;
-    border-left: 1px solid rgba(255, 255, 255, 0.1);
-  }
-
-  .code-panel-wrapper.code-panel-open > .code-panel {
     display: flex;
-    animation: slideInRight 0.3s ease;
-  }
-
-  @keyframes slideInRight {
-    from { transform: translateX(100%); }
-    to { transform: translateX(0); }
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    max-width: 100%;
+    height: 100%;
+    z-index: 36;
+    border-left: none;
+    border-top: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 14px 14px 0 0;
+    box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.35);
   }
 
   /* ============================================
@@ -1613,7 +1952,9 @@ body {
      ============================================ */
 
   /* --- 快速排序柱状图 --- */
-  .quicksort-viz {
+  .quicksort-viz,
+  .bubblesort-viz,
+  .mergesort-viz {
     max-width: 100%;
   }
 
@@ -1649,6 +1990,23 @@ body {
   /* --- Dijkstra 图 --- */
   .dijkstra-viz {
     max-width: 100%;
+  }
+
+  /* --- 哈夫曼树 --- */
+  .huffman-viz {
+    max-width: 100%;
+  }
+
+  .huffman-code-row {
+    padding: 3px 8px;
+  }
+
+  .huffman-code-char {
+    font-size: 11px;
+  }
+
+  .huffman-code-value {
+    font-size: 10px;
   }
 
   /* --- 汉诺塔 --- */
@@ -1879,9 +2237,14 @@ body {
     max-width: 100vw;
   }
 
+  .code-panel-wrapper {
+    top: 44px;
+  }
+
   .code-panel-wrapper > .code-panel {
-    width: 100vw;
-    max-width: 100vw;
+    width: 100%;
+    max-width: 100%;
+    border-radius: 12px 12px 0 0;
   }
 
   .step-info-bar {

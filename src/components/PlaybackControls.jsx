@@ -3,7 +3,7 @@ import { useEffect, useRef } from 'react';
 export default function PlaybackControls({
   isRunning, hasSteps, currentStep, totalSteps,
   speed, onSpeedChange, onPlay, onStepForward,
-  onStepBackward, onReset, onTick, tickInterval,
+  onStepBackward, onReset, onSeek, onTick, tickInterval,
 }) {
   const timerRef = useRef(null);
 
@@ -14,24 +14,39 @@ export default function PlaybackControls({
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [isRunning, tickInterval, onTick]);
 
-  const progress = totalSteps > 0 ? ((currentStep + 1) / totalSteps) * 100 : 0;
   const canPrev = hasSteps && currentStep > 0;
   const canNext = hasSteps && currentStep < totalSteps - 1;
 
   return (
     <div className="playback-bar">
-      <button className="playback-btn" onClick={onReset} disabled={!hasSteps} title="重置">⏮</button>
-      <button className="playback-btn" onClick={onStepBackward} disabled={!canPrev} title="上一步">◀</button>
-      <button className="playback-btn btn-play-main" onClick={onPlay} disabled={!canNext} title={isRunning ? '暂停' : '播放'}>
+      <button className="playback-btn" onClick={onReset} disabled={!hasSteps} title="重置 (R)">⏮</button>
+      <button className="playback-btn" onClick={onStepBackward} disabled={!canPrev} title="上一步 (←)">◀</button>
+      <button className="playback-btn btn-play-main" onClick={onPlay} disabled={!canNext && !isRunning} title="播放/暂停 (空格)">
         {isRunning ? '⏸' : '▶'}
       </button>
-      <button className="playback-btn" onClick={onStepForward} disabled={!canNext} title="下一步">▶</button>
-      <button className="playback-btn" onClick={() => { /* 跳末尾会在外部处理 */ }} disabled={!canNext} title="跳到末尾">⏭</button>
+      <button className="playback-btn" onClick={onStepForward} disabled={!canNext} title="下一步 (→)">▶</button>
+      <button
+        className="playback-btn"
+        onClick={() => {
+          if (hasSteps) onSeek?.(totalSteps - 1);
+        }}
+        disabled={!canNext}
+        title="跳到末尾"
+      >
+        ⏭
+      </button>
 
       <div className="playback-progress">
-        <div className="progress-track">
-          <div className="progress-fill" style={{ width: `${progress}%` }} />
-        </div>
+        <input
+          type="range"
+          className="progress-slider"
+          min={0}
+          max={totalSteps > 0 ? totalSteps - 1 : 0}
+          value={currentStep}
+          onChange={(e) => onSeek?.(Number(e.target.value))}
+          disabled={!hasSteps}
+          title="拖动跳转到任意步骤"
+        />
         <span className="progress-label">{hasSteps ? `${currentStep + 1} / ${totalSteps}` : '-- / --'}</span>
       </div>
 
@@ -45,3 +60,4 @@ export default function PlaybackControls({
     </div>
   );
 }
+

@@ -2,7 +2,7 @@ import { useRef, useEffect, useState, useMemo } from 'react';
 import { CODE_LANGUAGES, getCodeState } from '../algorithms/registry';
 import { tokenize } from '../utils/syntaxHighlight';
 
-export default function CodePanel({ algorithm, stepType, hasSteps }) {
+export default function CodePanel({ algorithm, stepType, hasSteps, onMobileClose }) {
   const listRef = useRef(null);
   const [activeLang, setActiveLang] = useState('pseudocode');
 
@@ -36,6 +36,11 @@ export default function CodePanel({ algorithm, stepType, hasSteps }) {
     <aside className="code-panel" data-lang={activeLang}>
       <div className="code-panel-header">
         <span>📝 {algorithm.name}</span>
+        {onMobileClose && (
+          <button className="mobile-code-back-btn" onClick={onMobileClose} title="返回主界面">
+            ← 返回
+          </button>
+        )}
       </div>
 
       {/* 语言切换标签 */}

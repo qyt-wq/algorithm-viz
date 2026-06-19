@@ -2,7 +2,7 @@ import { useState, useCallback, useMemo } from 'react';
 import { DEFAULT_GRAPH, autoLayout } from '../algorithms/dijkstra';
 
 function generateRandomData(algorithm) {
-  if (algorithm.id === 'quicksort') {
+  if (algorithm.inputType === 'array') {
     const count = Math.floor(Math.random() * (algorithm.randomCount.max - algorithm.randomCount.min + 1)) + algorithm.randomCount.min;
     const arr = [];
     for (let i = 0; i < count; i++) {
@@ -16,6 +16,19 @@ function generateRandomData(algorithm) {
   }
   if (algorithm.id === 'hanoi') {
     return Math.floor(Math.random() * (algorithm.randomRange.max - algorithm.randomRange.min + 1)) + algorithm.randomRange.min;
+  }
+  if (algorithm.inputType === 'frequencies') {
+    const chars = 'abcdefghijklmnopqrstuvwxyz';
+    const count = Math.floor(Math.random() * (algorithm.randomCount.max - algorithm.randomCount.min + 1)) + algorithm.randomCount.min;
+    const freqMap = {};
+    const used = new Set();
+    for (let i = 0; i < count; i++) {
+      let c;
+      do { c = chars[Math.floor(Math.random() * chars.length)]; } while (used.has(c));
+      used.add(c);
+      freqMap[c] = Math.floor(Math.random() * (algorithm.randomRange.max - algorithm.randomRange.min + 1)) + algorithm.randomRange.min;
+    }
+    return freqMap;
   }
   return null;
 }
@@ -99,7 +112,7 @@ export default function DataInput({ algorithm, onRun, disabled, testCases }) {
 
   const parseAndValidate = useCallback((raw) => {
     setError('');
-    if (algorithm.id === 'quicksort') {
+    if (algorithm.inputType === 'array') {
       const parts = raw.split(/[,，\s]+/).filter(Boolean);
       const nums = parts.map(Number);
       const invalid = nums.filter((n) => isNaN(n) || !Number.isInteger(n));
@@ -110,7 +123,6 @@ export default function DataInput({ algorithm, onRun, disabled, testCases }) {
     }
     if (algorithm.id === 'dijkstra') {
       const val = raw.trim().toUpperCase();
-      // 验证起始节点在可用节点列表中
       if (!availableNodes.includes(val)) {
         setError(`请输入有效起始节点（${availableNodes.join(', ')}）`);
         return null;
@@ -121,6 +133,26 @@ export default function DataInput({ algorithm, onRun, disabled, testCases }) {
       const n = parseInt(raw.trim(), 10);
       if (isNaN(n) || n < 2 || n > 8) { setError('请输入2-8之间的整数'); return null; }
       return n;
+    }
+    if (algorithm.inputType === 'frequencies') {
+      const pairs = raw.split(/[\s,]+/).filter(Boolean);
+      const freqMap = {};
+      for (const pair of pairs) {
+        const colonIdx = pair.indexOf(':');
+        if (colonIdx < 1 || colonIdx === pair.length - 1) {
+          setError(`无效格式: "${pair}"，每项格式为 "字符:频率"（如 a:5）`); return null;
+        }
+        const char = pair.slice(0, colonIdx);
+        const freqStr = pair.slice(colonIdx + 1);
+        if (char.length !== 1) { setError(`字符必须是单个字母: "${char}"`); return null; }
+        const freq = Number(freqStr);
+        if (isNaN(freq) || freq <= 0 || !Number.isInteger(freq)) { setError(`频率必须为正整数: "${freqStr}"`); return null; }
+        if (freqMap[char]) { setError(`重复字符: "${char}"`); return null; }
+        freqMap[char] = freq;
+      }
+      if (Object.keys(freqMap).length < 2) { setError('至少需要2个字符'); return null; }
+      if (Object.keys(freqMap).length > 26) { setError('最多26个字符'); return null; }
+      return freqMap;
     }
     return null;
   }, [algorithm, availableNodes]);
@@ -153,7 +185,11 @@ export default function DataInput({ algorithm, onRun, disabled, testCases }) {
   const handleRandom = () => {
     setInputMode('random');
     const data = generateRandomData(algorithm);
-    setManualValue(Array.isArray(data) ? data.join(', ') : String(data));
+    if (algorithm.inputType === 'frequencies') {
+      setManualValue(Object.entries(data).map(([k, v]) => `${k}:${v}`).join(' '));
+    } else {
+      setManualValue(Array.isArray(data) ? data.join(', ') : String(data));
+    }
     setError('');
     if (algorithm.id === 'dijkstra') {
       setGraphMode('builtin');
@@ -174,6 +210,10 @@ export default function DataInput({ algorithm, onRun, disabled, testCases }) {
     } else if (algorithm.id === 'dijkstra') {
       setGraphMode('builtin');
       setManualValue(String(tc.input));
+      onRun(tc.input);
+    } else if (algorithm.inputType === 'frequencies') {
+      // 频率测试用例：将对象转为显示字符串
+      setManualValue(Object.entries(tc.input).map(([k, v]) => `${k}:${v}`).join(' '));
       onRun(tc.input);
     } else {
       setManualValue(Array.isArray(tc.input) ? tc.input.join(', ') : String(tc.input));
@@ -288,8 +328,8 @@ export default function DataInput({ algorithm, onRun, disabled, testCases }) {
         </div>
       )}
 
-      {/* ---- 非Dijkstra算法的普通输入 ---- */}
-      {algoId !== 'dijkstra' && (
+      {/* ---- 非Dijkstra/非频率算法的普通输入 ---- */}
+      {algoId !== 'dijkstra' && algorithm.inputType !== 'frequencies' && (
         <div className="input-row">
           <input
             type="text"
@@ -298,11 +338,26 @@ export default function DataInput({ algorithm, onRun, disabled, testCases }) {
             onChange={(e) => { setManualValue(e.target.value); setInputMode('manual'); setError(''); }}
             placeholder={algorithm.inputHint}
             disabled={disabled}
-            onKeyDown={(e) => { if (e.key === 'Enter') handleRun(); }}
+            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleRun(); } }}
           />
         </div>
       )}
-      {algoId !== 'dijkstra' && error && <p className="error-msg">⚠ {error}</p>}
+
+      {/* ---- 频率输入（哈夫曼树） ---- */}
+      {algorithm.inputType === 'frequencies' && (
+        <div className="input-row">
+          <input
+            type="text"
+            className={`text-input ${error ? 'input-error' : ''}`}
+            value={manualValue}
+            onChange={(e) => { setManualValue(e.target.value); setInputMode('manual'); setError(''); }}
+            placeholder={algorithm.inputHint}
+            disabled={disabled}
+            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleRun(); } }}
+          />
+        </div>
+      )}
+      {(algoId !== 'dijkstra' || algorithm.inputType === 'frequencies') && error && <p className="error-msg">⚠ {error}</p>}
 
       <button className="btn btn-primary btn-full" onClick={handleRun} disabled={disabled}>
         ▶ 执行算法
@@ -316,11 +371,13 @@ export default function DataInput({ algorithm, onRun, disabled, testCases }) {
               <div key={tc.id} className="testcase-chip" onClick={() => handleTestCase(tc)} title={tc.description}>
                 <span className="testcase-chip-name">{tc.name}</span>
                 <span className="testcase-chip-preview">
-                  {algoId === 'dijkstra' && typeof tc.input === 'object'
+                  {algoId === 'dijkstra' && typeof tc.input === 'object' && tc.input.graph
                     ? `图:${tc.input.graph.nodes.length}节点/${tc.input.graph.edges.length}边, 起点:${tc.input.startNode}`
-                    : Array.isArray(tc.input)
-                      ? `[${tc.input.slice(0, 3).join(',')}${tc.input.length > 3 ? '…' : ''}]`
-                      : tc.input}
+                    : algorithm.inputType === 'frequencies' && typeof tc.input === 'object'
+                      ? Object.entries(tc.input).slice(0, 4).map(([k, v]) => `${k}:${v}`).join(' ') + (Object.keys(tc.input).length > 4 ? '…' : '')
+                      : Array.isArray(tc.input)
+                        ? `[${tc.input.slice(0, 3).join(',')}${tc.input.length > 3 ? '…' : ''}]`
+                        : tc.input}
                 </span>
               </div>
             ))}

@@ -106,6 +106,57 @@ export const testCases = {
     },
   ],
 
+  mergesort: [
+    {
+      id: 'ms-tc1',
+      name: '常规无序数组',
+      input: [38, 27, 43, 3, 9, 82, 10],
+      description: '标准7元素无序数组，验证分治和合并过程',
+      expectedResult: [3, 9, 10, 27, 38, 43, 82],
+    },
+    {
+      id: 'ms-tc2',
+      name: '偶数长度数组',
+      input: [12, 11, 13, 5, 6, 7],
+      description: '6元素数组，验证偶数长度的对称分割行为',
+      expectedResult: [5, 6, 7, 11, 12, 13],
+    },
+  ],
+
+  huffman: [
+    {
+      id: 'hf-tc1',
+      name: '标准示例',
+      input: { a: 5, b: 9, c: 12, d: 13, e: 16, f: 45 },
+      description: '经典的6字符哈夫曼编码示例，a~f 频率递增',
+      expectedResult: 'f:0, e:111, d:101, c:100, b:1101, a:1100',
+    },
+    {
+      id: 'hf-tc2',
+      name: '等频率字符',
+      input: { x: 10, y: 10, z: 10, w: 10 },
+      description: '所有字符频率相同，验证树结构平衡性',
+      expectedResult: '每个字符编码长度均为2位（树完全平衡）',
+    },
+  ],
+
+  bubblesort: [
+    {
+      id: 'bs-tc1',
+      name: '常规无序数组',
+      input: [64, 34, 25, 12, 22, 11, 90],
+      description: '标准7元素无序数组，验证多轮冒泡过程',
+      expectedResult: [11, 12, 22, 25, 34, 64, 90],
+    },
+    {
+      id: 'bs-tc2',
+      name: '接近有序数组（测试提前终止）',
+      input: [1, 2, 3, 5, 4, 6, 7],
+      description: '仅有一对逆序的数组，验证第2轮无交换时提前终止',
+      expectedResult: [1, 2, 3, 4, 5, 6, 7],
+    },
+  ],
+
 };
 
 /** 获取指定算法的测试用例 */

@@ -1,6 +1,9 @@
 import QuickSortViz from './QuickSortViz';
+import BubbleSortViz from './BubbleSortViz';
+import MergeSortViz from './MergeSortViz';
 import DijkstraViz from './DijkstraViz';
 import HanoiViz from './HanoiViz';
+import HuffmanViz from './HuffmanViz';
 
 export default function VisualizationArea({ algorithm, currentStep, steps, currentStepIndex, graphData }) {
   if (!currentStep || steps.length === 0) {
@@ -25,8 +28,14 @@ export default function VisualizationArea({ algorithm, currentStep, steps, curre
     switch (algorithm.id) {
       case 'quicksort':
         return <QuickSortViz step={currentStep} steps={steps} currentIndex={currentStepIndex} />;
+      case 'bubblesort':
+        return <BubbleSortViz step={currentStep} />;
+      case 'mergesort':
+        return <MergeSortViz step={currentStep} />;
       case 'dijkstra':
         return <DijkstraViz step={currentStep} graphData={graphData} steps={steps} currentIndex={currentStepIndex} />;
+      case 'huffman':
+        return <HuffmanViz step={currentStep} steps={steps} currentIndex={currentStepIndex} />;
       case 'hanoi': {
         const nd = steps[0]?.pegs ? Object.values(steps[0].pegs).reduce((s, p) => s + p.length, 0) : 0;
         return <HanoiViz step={currentStep} numDisks={nd} />;
