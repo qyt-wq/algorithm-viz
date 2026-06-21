@@ -672,6 +672,59 @@ body {
   border-color: rgba(74, 144, 217, 0.3);
 }
 
+/* --- 紧凑播放栏（对比模式）--- */
+.playback-compact {
+  gap: 4px;
+  padding: 4px 8px;
+}
+
+.playback-compact .playback-btn {
+  width: 26px;
+  height: 26px;
+  font-size: 11px;
+}
+
+.playback-compact .playback-btn.btn-play-main {
+  width: 30px;
+  height: 30px;
+  font-size: 13px;
+}
+
+.playback-compact .playback-progress {
+  gap: 4px;
+}
+
+.playback-compact .progress-label {
+  font-size: 10px;
+  min-width: 44px;
+}
+
+/* --- 紧凑步骤信息条（对比模式）--- */
+.step-info-compact {
+  padding: 5px 10px;
+  min-height: 32px;
+  gap: 6px;
+}
+
+.step-info-compact .step-info-badge {
+  font-size: 9px;
+  padding: 2px 7px;
+}
+
+.step-info-compact .step-info-text {
+  font-size: 11px;
+}
+
+/* --- 对比面板纵向 flex 布局 --- */
+.compare-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.compare-panel .visualization-area {
+  flex: 1;
+}
+
 /* ============================================
    动画可视化区
    ============================================ */
@@ -743,6 +796,12 @@ body {
   gap: 10px;
   flex-shrink: 0;
   min-height: 42px;
+  animation: stepFadeIn 0.3s ease;
+}
+
+@keyframes stepFadeIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 .step-info-badge {
@@ -1140,7 +1199,7 @@ body {
   max-width: 44px;
   border-radius: 4px 4px 0 0;
   position: relative;
-  transition: height 0.35s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.25s ease;
+  transition: height 0.35s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.25s ease, filter 0.3s ease;
   min-height: 6px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
@@ -1242,11 +1301,11 @@ body {
   contain: layout style;
 }
 
-.graph-node-circle {
-  transition: fill 0.3s ease, r 0.2s ease;
+.graph-node {
+  transition: fill 0.35s ease, r 0.25s ease;
 }
 
-.graph-edge-line {
+.graph-edge {
   transition: stroke 0.3s ease, stroke-width 0.3s ease;
 }
 
@@ -1257,13 +1316,23 @@ body {
 .huffman-viz {
   width: 100%;
   max-width: 800px;
-  contain: layout style;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .huffman-tree-svg {
   width: 100%;
   height: auto;
-  contain: layout style;
+  flex-shrink: 0;
+}
+
+/* 完成步骤：限制树高度，确保编码表可见 */
+.huffman-complete .huffman-tree-svg {
+  max-height: 320px;
+  width: auto;
+  max-width: 100%;
+  display: block;
+  margin: 0 auto;
 }
 
 .huffman-node {
@@ -1443,9 +1512,9 @@ body {
 }
 
 @keyframes disk-pop {
-  0% { filter: brightness(1); }
-  50% { filter: brightness(1.5) drop-shadow(0 0 8px rgba(255,255,255,0.5)); }
-  100% { filter: brightness(1); }
+  0%   { filter: brightness(1); transform: scale(1); }
+  50%  { filter: brightness(1.5) drop-shadow(0 0 8px rgba(255,255,255,0.5)); transform: scale(1.10); }
+  100% { filter: brightness(1); transform: scale(1); }
 }
 
 .hanoi-move-info {

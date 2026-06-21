@@ -104,9 +104,11 @@ export default function HuffmanViz({ step, steps, currentIndex }) {
     return map;
   }, [positionedNodes]);
 
+  const isComplete = step.type === 'complete' && step.root;
+
   return (
-    <div className="huffman-viz">
-      <svg viewBox={`0 0 ${svgWidth} ${svgHeight}`} className="huffman-tree-svg">
+    <div className={`huffman-viz${isComplete ? ' huffman-complete' : ''}`}>
+      <svg viewBox={`0 0 ${svgWidth} ${svgHeight}`} className="huffman-tree-svg" preserveAspectRatio="xMidYMid meet">
         {/* 树枝边 */}
         {positionedNodes.map((node) => (
           <g key={`edges-${node.id}`}>

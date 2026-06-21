@@ -68,9 +68,19 @@ export function huffmanEngine(frequencyMap) {
   const codes = {};
   generateCodes(root, '', codes);
 
+  // 扁平化整棵树，确保所有节点都在步骤数据中
+  const allNodes = [];
+  const flattenTree = (node) => {
+    if (!node) return;
+    allNodes.push({ ...node, left: null, right: null }); // 拷贝节点但断开引用避免循环
+    flattenTree(node.left);
+    flattenTree(node.right);
+  };
+  flattenTree(root);
+
   steps.push({
     type: 'complete',
-    nodes: [root].map((n) => ({ ...n, left: n.left ? { ...n.left } : null, right: n.right ? { ...n.right } : null })),
+    nodes: allNodes,
     root,
     codes,
     description: `哈夫曼树构建完成！根节点总频率 = ${root.freq}`,

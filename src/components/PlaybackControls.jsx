@@ -4,6 +4,7 @@ export default function PlaybackControls({
   isRunning, hasSteps, currentStep, totalSteps,
   speed, onSpeedChange, onPlay, onStepForward,
   onStepBackward, onReset, onSeek, onTick, tickInterval,
+  compact = false,
 }) {
   const timerRef = useRef(null);
 
@@ -18,23 +19,25 @@ export default function PlaybackControls({
   const canNext = hasSteps && currentStep < totalSteps - 1;
 
   return (
-    <div className="playback-bar">
+    <div className={`playback-bar${compact ? ' playback-compact' : ''}`}>
       <button className="playback-btn" onClick={onReset} disabled={!hasSteps} title="重置 (R)">⏮</button>
       <button className="playback-btn" onClick={onStepBackward} disabled={!canPrev} title="上一步 (←)">◀</button>
       <button className="playback-btn btn-play-main" onClick={onPlay} disabled={!canNext && !isRunning} title="播放/暂停 (空格)">
         {isRunning ? '⏸' : '▶'}
       </button>
       <button className="playback-btn" onClick={onStepForward} disabled={!canNext} title="下一步 (→)">▶</button>
-      <button
-        className="playback-btn"
-        onClick={() => {
-          if (hasSteps) onSeek?.(totalSteps - 1);
-        }}
-        disabled={!canNext}
-        title="跳到末尾"
-      >
-        ⏭
-      </button>
+      {!compact && (
+        <button
+          className="playback-btn"
+          onClick={() => {
+            if (hasSteps) onSeek?.(totalSteps - 1);
+          }}
+          disabled={!canNext}
+          title="跳到末尾"
+        >
+          ⏭
+        </button>
+      )}
 
       <div className="playback-progress">
         <input

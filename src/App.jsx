@@ -55,6 +55,7 @@ export default function App() {
   const [rightSteps, setRightSteps] = useState([]);
   const [rightStepIndex, setRightStepIndex] = useState(-1);
   const [rightGraphData, setRightGraphData] = useState(null);
+  const [rightIsRunning, setRightIsRunning] = useState(false);
 
   // ---- 学习统计刷新键 ----
   const [statsRefreshKey, setStatsRefreshKey] = useState(0);
@@ -99,6 +100,7 @@ export default function App() {
     localStorage.removeItem('auth_token');
     setCurrentUser(null);
     setIsRunning(false);
+    setRightIsRunning(false);
     setCurrentStepIndex(-1);
     setRightStepIndex(-1);
     setSteps([]);
@@ -230,6 +232,7 @@ export default function App() {
 
   const reset = useCallback(() => {
     setIsRunning(false);
+    setRightIsRunning(false);
     setCurrentStepIndex(-1);
     setRightStepIndex(-1);
     setSteps([]);
@@ -260,6 +263,40 @@ export default function App() {
     },
     [compareMode, rightSteps.length]
   );
+
+  // ---- 右侧独立导航回调（对比模式）----
+  const rightPlaybackTick = useCallback(() => {
+    setRightStepIndex((prev) => {
+      if (prev >= rightSteps.length - 1) {
+        setRightIsRunning(false);
+        return prev;
+      }
+      return prev + 1;
+    });
+  }, [rightSteps.length]);
+
+  const rightStepForward = useCallback(() => {
+    setRightStepIndex((prev) => Math.min(prev + 1, rightSteps.length - 1));
+  }, [rightSteps.length]);
+
+  const rightStepBackward = useCallback(() => {
+    setRightStepIndex((prev) => Math.max(prev - 1, 0));
+  }, []);
+
+  const rightGoToStep = useCallback((idx) => {
+    setRightIsRunning(false);
+    setRightStepIndex(idx);
+  }, []);
+
+  const rightHandleSeek = useCallback((stepIndex) => {
+    setRightIsRunning(false);
+    setRightStepIndex(stepIndex);
+  }, []);
+
+  const rightReset = useCallback(() => {
+    setRightIsRunning(false);
+    setRightStepIndex(-1);
+  }, []);
 
   const handleAlgoChange = useCallback(
     (algo) => {
@@ -488,27 +525,46 @@ export default function App() {
 
         {/* 中间 — 动画区域 */}
         <main className="main-area" ref={vizRef}>
-          <PlaybackControls
-            isRunning={isRunning}
-            hasSteps={steps.length > 0}
-            currentStep={currentStepIndex}
-            totalSteps={steps.length}
-            speed={speed}
-            onSpeedChange={setSpeed}
-            onPlay={() => setIsRunning(!isRunning)}
-            onStepForward={stepForward}
-            onStepBackward={stepBackward}
-            onReset={reset}
-            onSeek={handleSeek}
-            onTick={onPlaybackTick}
-            tickInterval={speedMap[speed]}
-          />
+          {/* 非对比模式：显示全局播放控制 */}
+          {!(compareMode && rightSteps.length > 0) && (
+            <PlaybackControls
+              isRunning={isRunning}
+              hasSteps={steps.length > 0}
+              currentStep={currentStepIndex}
+              totalSteps={steps.length}
+              speed={speed}
+              onSpeedChange={setSpeed}
+              onPlay={() => setIsRunning(!isRunning)}
+              onStepForward={stepForward}
+              onStepBackward={stepBackward}
+              onReset={reset}
+              onSeek={handleSeek}
+              onTick={onPlaybackTick}
+              tickInterval={speedMap[speed]}
+            />
+          )}
 
-          {/* 对比模式 — 并排可视化 */}
+          {/* 对比模式 — 并排可视化，各有独立控制 */}
           {compareMode && rightSteps.length > 0 ? (
             <div className="compare-area">
               <div className="compare-panel compare-left">
                 <div className="compare-panel-label">{selectedAlgo.name}</div>
+                <PlaybackControls
+                  compact
+                  isRunning={isRunning}
+                  hasSteps={steps.length > 0}
+                  currentStep={currentStepIndex}
+                  totalSteps={steps.length}
+                  speed={speed}
+                  onSpeedChange={setSpeed}
+                  onPlay={() => setIsRunning(!isRunning)}
+                  onStepForward={stepForward}
+                  onStepBackward={stepBackward}
+                  onReset={reset}
+                  onSeek={handleSeek}
+                  onTick={onPlaybackTick}
+                  tickInterval={speedMap[speed]}
+                />
                 <VisualizationArea
                   algorithm={selectedAlgo}
                   currentStep={currentStep}
@@ -516,10 +572,34 @@ export default function App() {
                   currentStepIndex={currentStepIndex}
                   graphData={graphData}
                 />
+                {currentStep && (
+                  <div className="step-info-bar step-info-compact" key={currentStepIndex}>
+                    <span className={`step-info-badge ${currentStep.type === 'complete' ? 'complete' : ''}`}>
+                      {currentStep.type}
+                    </span>
+                    <span className="step-info-text">{currentStep.description}</span>
+                  </div>
+                )}
               </div>
               <div className="compare-divider" />
               <div className="compare-panel compare-right">
                 <div className="compare-panel-label">{compareAlgo?.name}</div>
+                <PlaybackControls
+                  compact
+                  isRunning={rightIsRunning}
+                  hasSteps={rightSteps.length > 0}
+                  currentStep={rightStepIndex}
+                  totalSteps={rightSteps.length}
+                  speed={speed}
+                  onSpeedChange={setSpeed}
+                  onPlay={() => setRightIsRunning(!rightIsRunning)}
+                  onStepForward={rightStepForward}
+                  onStepBackward={rightStepBackward}
+                  onReset={rightReset}
+                  onSeek={rightHandleSeek}
+                  onTick={rightPlaybackTick}
+                  tickInterval={speedMap[speed]}
+                />
                 <VisualizationArea
                   algorithm={compareAlgo}
                   currentStep={rightCurrentStep}
@@ -527,26 +607,35 @@ export default function App() {
                   currentStepIndex={rightStepIndex}
                   graphData={rightGraphData}
                 />
+                {rightCurrentStep && (
+                  <div className="step-info-bar step-info-compact" key={rightStepIndex}>
+                    <span className={`step-info-badge ${rightCurrentStep.type === 'complete' ? 'complete' : ''}`}>
+                      {rightCurrentStep.type}
+                    </span>
+                    <span className="step-info-text">{rightCurrentStep.description}</span>
+                  </div>
+                )}
               </div>
             </div>
           ) : (
-            <VisualizationArea
-              algorithm={selectedAlgo}
-              currentStep={currentStep}
-              steps={steps}
-              currentStepIndex={currentStepIndex}
-              graphData={graphData}
-            />
-          )}
-
-          {/* 步骤描述条 */}
-          {currentStep && (
-            <div className="step-info-bar">
-              <span className={`step-info-badge ${currentStep.type === 'complete' ? 'complete' : ''}`}>
-                {currentStep.type}
-              </span>
-              <span className="step-info-text">{currentStep.description}</span>
-            </div>
+            <>
+              <VisualizationArea
+                algorithm={selectedAlgo}
+                currentStep={currentStep}
+                steps={steps}
+                currentStepIndex={currentStepIndex}
+                graphData={graphData}
+              />
+              {/* 步骤描述条 */}
+              {currentStep && (
+                <div className="step-info-bar" key={currentStepIndex}>
+                  <span className={`step-info-badge ${currentStep.type === 'complete' ? 'complete' : ''}`}>
+                    {currentStep.type}
+                  </span>
+                  <span className="step-info-text">{currentStep.description}</span>
+                </div>
+              )}
+            </>
           )}
 
           {/* 移动端 — 查看代码按钮（代码面板打开后使用面板内的返回按钮关闭） */}
