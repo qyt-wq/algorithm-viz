@@ -9,7 +9,7 @@ import pool from '../db.js';
 const router = express.Router();
 
 const JWT_SECRET = process.env.JWT_SECRET || 'algorithm_viz_jwt_secret_2024';
-const JWT_EXPIRES = '7d';
+const JWT_EXPIRES = '1d';
 const BCRYPT_ROUNDS = 10;
 
 // 生成 JWT
