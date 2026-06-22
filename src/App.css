@@ -25,6 +25,18 @@
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
   --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', 'Monaco', monospace;
+
+  /* 代码 token 颜色（默认：深色面板） */
+  --token-keyword: #6ab0f3;
+  --token-type: #ffd580;
+  --token-string: #f0a040;
+  --token-comment: #5cc98a;
+  --token-number: #c792ea;
+  --token-preprocessor: #e06060;
+  --token-ident: #d0d4e0;
+  --token-plain: #b0b8c8;
+  --code-line-color: #c0c8d8;
+  --code-line-num: #556080;
 }
 
 /* ============================================
@@ -51,6 +63,17 @@
   --color-code-panel: #f0f2f5;
   --color-text-on-dark: #3a4050;
   --color-text-on-dark-muted: #6a7080;
+  /* 代码 token 颜色 — 浅色面板：深色文字，高对比度 */
+  --token-keyword: #1b6ec2;
+  --token-type: #9b6b0c;
+  --token-string: #c2510b;
+  --token-comment: #2d8a56;
+  --token-number: #7b3fa3;
+  --token-preprocessor: #c0392b;
+  --token-ident: #2c3e50;
+  --token-plain: #4a5568;
+  --code-line-color: #3a4050;
+  --code-line-num: #8899aa;
 }
 
 /* 深空蓝 */
@@ -954,7 +977,7 @@ body {
   font-family: var(--font-mono);
   text-transform: uppercase;
   background: rgba(74, 144, 217, 0.2);
-  color: #6ab0f3;
+  color: var(--token-keyword);
 }
 
 .step-info-badge.complete {
@@ -1017,7 +1040,7 @@ body {
 
 .code-lang-tab.active {
   background: rgba(74, 144, 217, 0.2);
-  color: #6ab0f3;
+  color: var(--token-keyword);
   font-weight: 600;
 }
 
@@ -1055,38 +1078,38 @@ body {
 }
 
 /* ---- 语法高亮 token 颜色 ---- */
-.token-keyword     { color: #6ab0f3; font-weight: 600; }  /* 关键字：亮蓝 */
-.token-type        { color: #ffd580; }                     /* 类型/内置：暖金 */
-.token-string      { color: #f0a040; }                     /* 字符串：橙色 */
-.token-comment     { color: #5cc98a; font-style: italic; } /* 注释：翠绿 */
-.token-number      { color: #c792ea; }                     /* 数字：淡紫 */
-.token-preprocessor { color: #e06060; }                    /* 预处理：红色 */
-.token-ident       { color: #d0d4e0; }                    /* 标识符：亮灰 */
-.token-plain        { color: #b0b8c8; }                    /* 普通符号：浅灰 */
+.token-keyword     { color: var(--token-keyword); font-weight: 600; }
+.token-type        { color: var(--token-type); }
+.token-string      { color: var(--token-string); }
+.token-comment     { color: var(--token-comment); font-style: italic; }
+.token-number      { color: var(--token-number); }
+.token-preprocessor { color: var(--token-preprocessor); }
+.token-ident       { color: var(--token-ident); }
+.token-plain        { color: var(--token-plain); }
 
 /* ---- 伪代码特殊样式：更加显眼 ---- */
 [data-lang="pseudocode"] .code-line {
-  color: #e0e4f0;                      /* 比普通代码更亮 */
-  font-size: 13px;                      /* 略大 */
+  color: var(--code-line-color);
+  font-size: 13px;
   line-height: 1.6;
   letter-spacing: 0.02em;
 }
 
 [data-lang="pseudocode"] .code-line.highlight {
-  background: rgba(74, 144, 217, 0.2);  /* 更强的高亮背景 */
-  color: #f0f4ff;
-  border-left-color: #6ab0f3;
+  background: rgba(74, 144, 217, 0.2);
+  color: var(--code-line-color);
+  border-left-color: var(--token-keyword);
   box-shadow: inset 0 0 24px rgba(74, 144, 217, 0.08);
 }
 
 [data-lang="pseudocode"] .code-line-num {
-  color: #8890b0;
+  color: var(--code-line-num);
   font-weight: 500;
   opacity: 0.8;
 }
 
 [data-lang="pseudocode"] .token-plain {
-  color: #d0d6e8;                       /* 伪代码普通文本更亮 */
+  color: var(--code-line-color);
 }
 
 /* 伪代码标签特殊指示 */
