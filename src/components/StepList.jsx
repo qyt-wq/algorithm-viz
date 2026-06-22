@@ -1,13 +1,26 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState, useCallback } from 'react';
 
 export default function StepList({ steps, currentStepIndex, onGoToStep }) {
   const activeRef = useRef(null);
+  const listRef = useRef(null);
+  const [showBackToTop, setShowBackToTop] = useState(false);
 
   useEffect(() => {
     if (activeRef.current) {
       activeRef.current.scrollIntoView({ behavior: 'instant', block: 'nearest' });
     }
   }, [currentStepIndex]);
+
+  // 监听滚动，控制回到顶部按钮的显示
+  const handleScroll = useCallback(() => {
+    if (listRef.current) {
+      setShowBackToTop(listRef.current.scrollTop > 200);
+    }
+  }, []);
+
+  const scrollToTop = useCallback(() => {
+    listRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
 
   if (steps.length === 0) {
     return (
@@ -65,7 +78,7 @@ export default function StepList({ steps, currentStepIndex, onGoToStep }) {
   return (
     <div className="panel step-list">
       <h3 className="panel-title">📋 执行步骤 ({steps.length})</h3>
-      <div className="step-items">
+      <div className="step-items" ref={listRef} onScroll={handleScroll}>
         {displaySteps.map((s, idx) => (
           <div
             key={idx}
@@ -83,6 +96,15 @@ export default function StepList({ steps, currentStepIndex, onGoToStep }) {
           </div>
         ))}
       </div>
+      {showBackToTop && (
+        <button
+          className="scroll-to-top-btn"
+          onClick={scrollToTop}
+          title="回到顶部"
+        >
+          ▲
+        </button>
+      )}
     </div>
   );
 }

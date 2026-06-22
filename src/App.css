@@ -326,6 +326,147 @@ body {
 }
 
 /* ============================================
+   步骤列表
+   ============================================ */
+
+.step-list {
+  display: flex;
+  flex-direction: column;
+  max-height: 100%;
+  position: relative;
+}
+
+.step-items {
+  overflow-y: auto;
+  max-height: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-right: 4px;
+  position: relative;
+}
+
+.step-items::-webkit-scrollbar {
+  width: 4px;
+}
+
+.step-items::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 2px;
+}
+
+.step-item {
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.step-item:hover {
+  background: rgba(74, 144, 217, 0.05);
+}
+
+.step-item.active {
+  background: rgba(74, 144, 217, 0.12);
+  border-color: rgba(74, 144, 217, 0.35);
+}
+
+.step-item.passed {
+  opacity: 0.55;
+}
+
+.step-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 3px;
+}
+
+.step-type-badge {
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  line-height: 1.4;
+}
+
+.step-type-init {
+  background: rgba(160, 140, 220, 0.15);
+  color: #b39ddb;
+}
+
+.step-type-action {
+  background: rgba(255, 152, 100, 0.18);
+  color: #ff9864;
+}
+
+.step-type-compare {
+  background: rgba(74, 144, 217, 0.15);
+  color: #6ab0f3;
+}
+
+.step-type-info {
+  background: rgba(160, 168, 180, 0.12);
+  color: #a0a8b4;
+}
+
+.step-type-complete {
+  background: rgba(60, 184, 120, 0.18);
+  color: #5cc98a;
+}
+
+.step-number {
+  font-size: 10px;
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
+  min-width: 20px;
+  text-align: right;
+}
+
+.step-item-desc {
+  font-size: 12px;
+  color: var(--color-text);
+  margin: 0;
+  line-height: 1.4;
+  word-break: break-all;
+}
+
+/* 回到顶部按钮 */
+.scroll-to-top-btn {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  z-index: 10;
+  transition: background 0.15s, transform 0.15s;
+  animation: fadeInUp 0.25s ease;
+}
+
+.scroll-to-top-btn:hover {
+  background: rgba(74, 144, 217, 0.15);
+  transform: translateY(-2px);
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================
    顶部算法选择器
    ============================================ */
 
