@@ -1456,9 +1456,8 @@ body {
 
 .huffman-viz {
   width: 100%;
-  max-width: 800px;
   overflow-y: auto;
-  overflow-x: hidden;
+  overflow-x: auto;
 }
 
 .huffman-tree-svg {
@@ -1469,7 +1468,7 @@ body {
 
 /* 完成步骤：限制树高度，确保编码表可见 */
 .huffman-complete .huffman-tree-svg {
-  max-height: 320px;
+  max-height: 400px;
   width: auto;
   max-width: 100%;
   display: block;

@@ -1,6 +1,12 @@
 import { useMemo } from 'react';
 
 const NODE_RADIUS = 20;
+const LEAF_SPACING = 70;       // 每个叶子节点的水平空间
+const TREE_PAD_X = 30;         // 树左右内边距
+const TREE_GAP = 40;           // 森林中树之间的最小间距
+const LEVEL_HEIGHT = 75;       // 层高
+const TOP_Y = 50;              // 根节点起始Y
+
 const COLORS = {
   leaf: '#6c5ce7',
   internal: '#a29bfe',
@@ -15,75 +21,102 @@ function countLeaves(node) {
   return countLeaves(node.left) + countLeaves(node.right);
 }
 
-function layoutTree(node, x, y, availableWidth, levelHeight = 70) {
+function getTreeDepth(n) {
+  if (!n) return 0;
+  return 1 + Math.max(getTreeDepth(n.left), getTreeDepth(n.right));
+}
+
+/** 计算一棵树所需的最小像素宽度 */
+function treePixelWidth(leafCount) {
+  return leafCount * LEAF_SPACING;
+}
+
+/**
+ * 递归布局单棵树。
+ * 保证同层节点最小间距 >= NODE_RADIUS * 3，避免图形重叠。
+ */
+function layoutTree(node, startX, y, totalWidth) {
   if (!node) return [];
-  const leaves = countLeaves(node);
-  const totalWidth = availableWidth;
   const result = [];
 
-  const layout = (n, lx, rx, cy) => {
+  const walk = (n, lx, rx, cy) => {
     if (!n) return;
     const cx = (lx + rx) / 2;
     result.push({ ...n, _x: cx, _y: cy });
+
     if (n.left || n.right) {
-      const childY = cy + levelHeight;
-      if (n.left) {
+      const childY = cy + LEVEL_HEIGHT;
+      if (n.left && n.right) {
         const lw = countLeaves(n.left);
-        layout(n.left, lx, lx + (lw / leaves) * totalWidth, childY);
-      }
-      if (n.right) {
         const rw = countLeaves(n.right);
-        layout(n.right, rx - (rw / leaves) * totalWidth, rx, childY);
+        const width = rx - lx;
+        // 按叶子数比例分配宽度，同时保证最小节点间距
+        const minHalf = NODE_RADIUS * 1.5;
+        const idealSplit = lx + (lw / (lw + rw)) * width;
+        const split = Math.max(lx + minHalf, Math.min(rx - minHalf, idealSplit));
+        walk(n.left, lx, split, childY);
+        walk(n.right, split, rx, childY);
+      } else if (n.left) {
+        walk(n.left, lx, rx, childY);
+      } else {
+        walk(n.right, lx, rx, childY);
       }
     }
   };
-  layout(node, x, x + totalWidth, y);
+  walk(node, startX, startX + totalWidth, y);
   return result;
 }
 
+/**
+ * 森林布局：多棵树按叶子数比例并排，互不重叠。
+ */
 function layoutForest(nodes) {
-  const trees = nodes.map((node) => ({ root: node, leafCount: countLeaves(node) }));
-  const totalLeaves = trees.reduce((s, t) => s + t.leafCount, 0);
-  const totalWidth = Math.max(500, totalLeaves * 60);
-  const spacing = totalWidth / (trees.length + 1);
+  const trees = nodes.map((node) => ({
+    root: node,
+    leafCount: countLeaves(node),
+  }));
+  const widths = trees.map((t) => treePixelWidth(t.leafCount));
+  const totalWidth = widths.reduce((s, w) => s + w, 0)
+    + TREE_GAP * (trees.length - 1)
+    + TREE_PAD_X * 2;
 
   const positionedNodes = [];
+  let cursor = TREE_PAD_X;
   trees.forEach((tree, i) => {
-    const x = spacing * (i + 1) - (tree.leafCount * 60) / 2;
-    positionedNodes.push(...layoutTree(tree.root, x, 50, tree.leafCount * 60));
+    positionedNodes.push(...layoutTree(tree.root, cursor, TOP_Y, widths[i]));
+    cursor += widths[i] + TREE_GAP;
   });
-  return { positionedNodes, totalWidth };
-}
-
-function getDepth(n) {
-  if (!n) return 0;
-  return 1 + Math.max(getDepth(n.left), getDepth(n.right));
+  return { positionedNodes, totalWidth: Math.max(500, totalWidth) };
 }
 
 export default function HuffmanViz({ step, steps, currentIndex }) {
   const nodes = step.nodes || [];
 
   const { positionedNodes, svgWidth, svgHeight } = useMemo(() => {
-    if (!nodes.length) return { positionedNodes: [], svgWidth: 600, svgHeight: 400 };
+    if (!nodes.length) return { positionedNodes: [], svgWidth: 600, svgHeight: 340 };
 
+    // ---- 完成状态：单棵完整树 ----
     if (step.type === 'complete' && step.root) {
       const leaves = countLeaves(step.root);
-      const w = Math.max(550, leaves * 60);
-      const h = 70 * Math.ceil(Math.log2(leaves)) + 140;
+      const w = treePixelWidth(leaves) + TREE_PAD_X * 2;
+      const depth = getTreeDepth(step.root);
+      const h = TOP_Y + depth * LEVEL_HEIGHT + NODE_RADIUS + 20;
       return {
-        positionedNodes: layoutTree(step.root, 20, w - 20, w - 40),
-        svgWidth: w,
+        positionedNodes: layoutTree(step.root, TREE_PAD_X, TOP_Y, treePixelWidth(leaves)),
+        svgWidth: Math.max(550, w),
         svgHeight: Math.max(400, h),
       };
     }
 
+    // ---- 森林状态：多棵树并排 ----
     const { positionedNodes: pos, totalWidth } = layoutForest(nodes);
     let maxDepth = 1;
-    for (const n of nodes) maxDepth = Math.max(maxDepth, getDepth(n));
+    for (const n of nodes) maxDepth = Math.max(maxDepth, getTreeDepth(n));
+    const h = TOP_Y + maxDepth * LEVEL_HEIGHT + NODE_RADIUS + 20;
     return {
       positionedNodes: pos,
       svgWidth: totalWidth,
-      svgHeight: Math.max(340, maxDepth * 70 + 140),
+      svgHeight: Math.max(340, h),
     };
   }, [nodes, step.type, step.root]);
 
