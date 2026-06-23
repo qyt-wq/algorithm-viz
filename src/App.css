@@ -1455,7 +1455,7 @@ body {
 
 .dijkstra-viz {
   width: 100%;
-  max-width: 600px;
+  max-width: 480px;
   contain: layout style;
 }
 
@@ -1499,52 +1499,53 @@ body {
 .dijkstra-path-row {
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 8px 14px;
+  gap: 8px;
+  padding: 7px 12px;
   background: rgba(46, 204, 113, 0.08);
   border-radius: 8px;
   border: 1px solid rgba(46, 204, 113, 0.15);
   font-size: 12px;
-  white-space: nowrap;
-  overflow-x: auto;
+  flex-wrap: wrap;
+}
+
+.dijkstra-path-target {
+  font-weight: 700;
+  font-size: 14px;
+  color: #2ecc71;
+  min-width: 18px;
+}
+
+.dijkstra-path-arrow {
+  color: var(--color-text-on-dark-muted);
+  font-size: 11px;
+}
+
+.dijkstra-path-chain {
+  color: var(--color-text-on-dark-muted);
+  flex: 1;
+  min-width: 0;
 }
 
 .dijkstra-path-node {
-  display: inline-block;
   font-weight: 500;
   color: #c0c8d8;
-  font-family: var(--font-mono);
-  font-size: 13px;
-  padding: 1px 5px;
-  border-radius: 4px;
-  background: rgba(255, 255, 255, 0.06);
 }
 
 .dijkstra-path-node.path-start {
   color: #2ecc71;
   font-weight: 700;
-  background: rgba(46, 204, 113, 0.15);
-}
-
-.dijkstra-path-node.path-end {
-  color: #f0a040;
-  font-weight: 700;
-  background: rgba(240, 160, 64, 0.12);
 }
 
 .dijkstra-path-sep {
   color: #5a6070;
-  font-size: 11px;
-  margin: 0 2px;
 }
 
 .dijkstra-path-dist {
   font-weight: 700;
-  font-size: 14px;
+  font-size: 13px;
   color: #f0a040;
   font-family: var(--font-mono);
-  margin-left: 8px;
-  flex-shrink: 0;
+  margin-left: auto;
 }
 
 /* ============================================
