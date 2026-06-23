@@ -264,6 +264,16 @@ export default function App() {
     [compareMode, rightSteps.length]
   );
 
+  // 重新播放：从第一步开始自动播放
+  const handleReplay = useCallback(() => {
+    setCurrentStepIndex(0);
+    setIsRunning(true);
+    if (compareMode && rightSteps.length > 0) {
+      setRightStepIndex(0);
+      setRightIsRunning(true);
+    }
+  }, [compareMode, rightSteps.length]);
+
   // ---- 右侧独立导航回调（对比模式）----
   const rightPlaybackTick = useCallback(() => {
     setRightStepIndex((prev) => {
@@ -539,6 +549,7 @@ export default function App() {
               onStepBackward={stepBackward}
               onReset={reset}
               onSeek={handleSeek}
+              onReplay={handleReplay}
               onTick={onPlaybackTick}
               tickInterval={speedMap[speed]}
             />

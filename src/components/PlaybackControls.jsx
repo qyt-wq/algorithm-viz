@@ -3,7 +3,7 @@ import { useEffect, useRef } from 'react';
 export default function PlaybackControls({
   isRunning, hasSteps, currentStep, totalSteps,
   speed, onSpeedChange, onPlay, onStepForward,
-  onStepBackward, onReset, onSeek, onTick, tickInterval,
+  onStepBackward, onReset, onSeek, onReplay, onTick, tickInterval,
   compact = false,
 }) {
   const timerRef = useRef(null);
@@ -21,9 +21,7 @@ export default function PlaybackControls({
 
   const handlePlay = () => {
     if (atEnd) {
-      // 最后一帧 → 跳到第一步并开始播放
-      onSeek?.(0);
-      onPlay?.();
+      onReplay?.();
     } else {
       onPlay?.();
     }
