@@ -21,10 +21,9 @@ export default function PlaybackControls({
 
   const handlePlay = () => {
     if (atEnd) {
-      // 最后一帧 → 从头重新播放
-      onReset?.();
-      // 使用 requestAnimationFrame 等 reset 状态落定后再切播放
-      requestAnimationFrame(() => onPlay?.());
+      // 最后一帧 → 跳到第一步并开始播放
+      onSeek?.(0);
+      onPlay?.();
     } else {
       onPlay?.();
     }
