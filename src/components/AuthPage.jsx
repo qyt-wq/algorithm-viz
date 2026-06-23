@@ -83,10 +83,31 @@ export default function AuthPage({ onLogin }) {
 
   return (
     <div className="auth-page-overlay">
+      {/* 算法主题背景层 */}
+      <div className="auth-bg-layer">
+        <div className="auth-bg-node auth-bg-node-1" />
+        <div className="auth-bg-node auth-bg-node-2" />
+        <div className="auth-bg-node auth-bg-node-3" />
+        <div className="auth-bg-node auth-bg-node-4" />
+        <div className="auth-bg-node auth-bg-node-5" />
+        <div className="auth-bg-node auth-bg-node-6" />
+        <svg className="auth-bg-edges" viewBox="0 0 800 600" preserveAspectRatio="none">
+          <line x1="120" y1="180" x2="280" y2="100" stroke="rgba(74,144,217,0.10)" strokeWidth="1.5" />
+          <line x1="280" y1="100" x2="520" y2="140" stroke="rgba(74,144,217,0.08)" strokeWidth="1" />
+          <line x1="280" y1="100" x2="380" y2="320" stroke="rgba(74,144,217,0.07)" strokeWidth="1" />
+          <line x1="520" y1="140" x2="680" y2="280" stroke="rgba(74,144,217,0.09)" strokeWidth="1.2" />
+          <line x1="120" y1="400" x2="380" y2="320" stroke="rgba(74,144,217,0.06)" strokeWidth="1" />
+          <line x1="380" y1="320" x2="680" y2="280" stroke="rgba(74,144,217,0.08)" strokeWidth="1" />
+          <line x1="680" y1="280" x2="620" y2="480" stroke="rgba(74,144,217,0.07)" strokeWidth="1" />
+          <line x1="120" y1="400" x2="280" y2="520" stroke="rgba(74,144,217,0.06)" strokeWidth="1" />
+          <line x1="280" y1="520" x2="620" y2="480" stroke="rgba(74,144,217,0.08)" strokeWidth="1" />
+        </svg>
+      </div>
       <div className="auth-card">
         <div className="auth-card-header">
+          <div className="auth-card-icon">🧮</div>
           <div className="auth-card-subtitle">算法过程可视化系统</div>
-          <div className="auth-card-title">{mode === 'login' ? '登录' : '注册'}</div>
+          <div className="auth-card-title">{mode === 'login' ? '欢迎回来' : '创建账号'}</div>
         </div>
 
         {/* 模式切换标签 */}
@@ -108,53 +129,62 @@ export default function AuthPage({ onLogin }) {
         </div>
 
         <form className="auth-form" onSubmit={handleSubmit}>
-          <div>
+          <div className="auth-field-group">
             <label className="auth-field-label">用户名</label>
-            <input
-              className={`auth-input ${error && !username.trim() ? 'input-error' : ''}`}
-              type="text"
-              placeholder="请输入用户名"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              disabled={loading}
-              autoComplete="username"
-              autoFocus
-            />
+            <div className="auth-input-wrapper">
+              <span className="auth-input-icon">👤</span>
+              <input
+                className={`auth-input ${error && !username.trim() ? 'input-error' : ''}`}
+                type="text"
+                placeholder="请输入用户名"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                disabled={loading}
+                autoComplete="username"
+                autoFocus
+              />
+            </div>
           </div>
 
-          <div>
+          <div className="auth-field-group">
             <label className="auth-field-label">密码</label>
-            <input
-              className={`auth-input ${error && !password ? 'input-error' : ''}`}
-              type="password"
-              placeholder="请输入密码"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              disabled={loading}
-              autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-            />
+            <div className="auth-input-wrapper">
+              <span className="auth-input-icon">🔒</span>
+              <input
+                className={`auth-input ${error && !password ? 'input-error' : ''}`}
+                type="password"
+                placeholder="请输入密码"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={loading}
+                autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+              />
+            </div>
           </div>
 
           {mode === 'register' && (
-            <div>
+            <div className="auth-field-group">
               <label className="auth-field-label">确认密码</label>
-              <input
-                className={`auth-input ${error && password !== confirmPassword ? 'input-error' : ''}`}
-                type="password"
-                placeholder="请再次输入密码"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                disabled={loading}
-                autoComplete="new-password"
-              />
+              <div className="auth-input-wrapper">
+                <span className="auth-input-icon">🔒</span>
+                <input
+                  className={`auth-input ${error && password !== confirmPassword ? 'input-error' : ''}`}
+                  type="password"
+                  placeholder="请再次输入密码"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  disabled={loading}
+                  autoComplete="new-password"
+                />
+              </div>
             </div>
           )}
 
-          {successMsg && <div className="auth-success-msg">{successMsg}</div>}
-          {error && <div className="auth-error-msg">{error}</div>}
+          {successMsg && <div className="auth-success-msg">✅ {successMsg}</div>}
+          {error && <div className="auth-error-msg">⚠️ {error}</div>}
 
           <button className="auth-submit-btn" type="submit" disabled={loading}>
-            {loading ? '请稍候...' : mode === 'login' ? '登录' : '注册'}
+            {loading ? '⏳ 请稍候...' : mode === 'login' ? '🚀 登录' : '✨ 注册'}
           </button>
         </form>
 

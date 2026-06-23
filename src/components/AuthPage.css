@@ -1,169 +1,524 @@
 /* ============================================
-   认证页面 — Login / Register 表单
+   认证页面 — 登录 / 注册 美化版
    ============================================ */
 
+/* --- 背景层 --- */
 .auth-page-overlay {
   display: flex;
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background: var(--color-bg);
+  background: linear-gradient(165deg, #e4eaf3 0%, #dbe3ee 20%, #eef2f8 45%, #e0e7f0 65%, #e8edf5 100%);
+  background-size: 400% 400%;
+  animation: authBgShift 24s ease-in-out infinite;
   padding: 20px;
+  position: relative;
+  overflow: hidden;
 }
 
+/* --- 背景装饰圆 --- */
+.auth-page-overlay::before {
+  content: '';
+  position: absolute;
+  width: 420px;
+  height: 420px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(74, 144, 217, 0.10) 0%, rgba(74, 144, 217, 0.02) 50%, transparent 70%);
+  top: -120px;
+  right: -100px;
+  animation: authFloatA 18s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.auth-page-overlay::after {
+  content: '';
+  position: absolute;
+  width: 350px;
+  height: 350px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(74, 144, 217, 0.08) 0%, rgba(60, 184, 120, 0.04) 40%, transparent 65%);
+  bottom: -80px;
+  left: -70px;
+  animation: authFloatB 22s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* ============================================
+   算法主题背景层 — 点阵网格 + 图节点 + 边
+   ============================================ */
+
+/* 点阵网格遮罩 */
+.auth-bg-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  /* 点阵：模拟坐标纸 / 算法网格 */
+  background-image: radial-gradient(circle, rgba(74, 144, 217, 0.10) 1.2px, transparent 1.2px);
+  background-size: 28px 28px;
+  animation: authGridDrift 30s linear infinite;
+}
+
+@keyframes authGridDrift {
+  0%   { background-position: 0 0; }
+  100% { background-position: 28px 28px; }
+}
+
+/* 图节点 — 圆形 + 脉冲光环 */
+.auth-bg-node {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(74, 144, 217, 0.12);
+  border: 1.5px solid rgba(74, 144, 217, 0.18);
+  animation: authNodePulse 4s ease-in-out infinite;
+}
+
+.auth-bg-node::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 1px solid rgba(74, 144, 217, 0.08);
+  animation: authNodeRing 4s ease-in-out infinite;
+}
+
+/* 节点位置与尺寸 */
+.auth-bg-node-1 { width: 28px; height: 28px; top: 16%; left: 12%; animation-delay: 0s; }
+.auth-bg-node-2 { width: 22px; height: 22px; top: 8%;  left: 34%; animation-delay: 0.6s; }
+.auth-bg-node-3 { width: 32px; height: 32px; top: 10%; left: 64%; animation-delay: 1.2s; }
+.auth-bg-node-4 { width: 24px; height: 24px; top: 48%; left: 46%; animation-delay: 1.8s; }
+.auth-bg-node-5 { width: 26px; height: 26px; top: 62%; left: 14%; animation-delay: 2.4s; }
+.auth-bg-node-6 { width: 20px; height: 20px; top: 44%; left: 84%; animation-delay: 3.0s; }
+
+/* 节点底部大号发光节点 */
+.auth-bg-node-4 { background: rgba(74, 144, 217, 0.15); border-color: rgba(74, 144, 217, 0.22); }
+.auth-bg-node-3 { background: rgba(74, 144, 217, 0.14); border-color: rgba(74, 144, 217, 0.20); }
+
+@keyframes authNodePulse {
+  0%, 100% { transform: scale(1);   opacity: 0.7; }
+  50%      { transform: scale(1.15); opacity: 1; }
+}
+
+@keyframes authNodeRing {
+  0%, 100% { transform: scale(1);   opacity: 0.5; }
+  50%      { transform: scale(1.6); opacity: 0; }
+}
+
+/* SVG 连线边 */
+.auth-bg-edges {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.6;
+  animation: authEdgesFade 8s ease-in-out infinite;
+}
+
+@keyframes authEdgesFade {
+  0%, 100% { opacity: 0.35; }
+  50%      { opacity: 0.7; }
+}
+
+/* 背景中随机小粒子 */
+.auth-bg-layer::before {
+  content: '';
+  position: absolute;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: rgba(74, 144, 217, 0.15);
+  top: 28%; left: 22%;
+  box-shadow:
+    40px  -60px 0 rgba(74, 144, 217, 0.10),
+    120px  30px 0 rgba(74, 144, 217, 0.08),
+    200px -40px 0 rgba(74, 144, 217, 0.12),
+    280px  80px 0 rgba(74, 144, 217, 0.07),
+    350px -20px 0 rgba(74, 144, 217, 0.11),
+    420px  50px 0 rgba(74, 144, 217, 0.09),
+    500px -70px 0 rgba(74, 144, 217, 0.06),
+    560px  10px 0 rgba(74, 144, 217, 0.10),
+    -30px  100px 0 rgba(74, 144, 217, 0.08),
+     50px  160px 0 rgba(74, 144, 217, 0.07),
+    150px  200px 0 rgba(74, 144, 217, 0.10),
+    320px  140px 0 rgba(74, 144, 217, 0.06),
+    460px  180px 0 rgba(74, 144, 217, 0.09),
+    580px  220px 0 rgba(74, 144, 217, 0.07),
+    600px  100px 0 rgba(74, 144, 217, 0.08);
+  animation: authParticlesFloat 20s ease-in-out infinite;
+}
+
+.auth-bg-layer::after {
+  content: '';
+  position: absolute;
+  width: 4px; height: 4px;
+  border-radius: 50%;
+  background: rgba(60, 184, 120, 0.12);
+  top: 55%; left: 70%;
+  box-shadow:
+    -80px  -40px 0 rgba(60, 184, 120, 0.07),
+    -160px  20px 0 rgba(60, 184, 120, 0.05),
+    -240px -30px 0 rgba(60, 184, 120, 0.08),
+    -320px  60px 0 rgba(60, 184, 120, 0.06),
+    -400px -10px 0 rgba(60, 184, 120, 0.09),
+    -480px  40px 0 rgba(60, 184, 120, 0.05),
+     60px   80px 0 rgba(60, 184, 120, 0.06),
+     140px  120px 0 rgba(60, 184, 120, 0.07),
+     220px  -60px 0 rgba(60, 184, 120, 0.05);
+  animation: authParticlesFloat 26s ease-in-out infinite reverse;
+}
+
+@keyframes authParticlesFloat {
+  0%, 100% { transform: translate(0, 0); }
+  25%      { transform: translate(8px, -12px); }
+  50%      { transform: translate(-4px, 6px); }
+  75%      { transform: translate(10px, 4px); }
+}
+
+@keyframes authBgShift {
+  0%, 100% { background-position: 0% 50%; }
+  25% { background-position: 50% 0%; }
+  50% { background-position: 100% 50%; }
+  75% { background-position: 50% 100%; }
+}
+
+@keyframes authFloatA {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  25% { transform: translate(-40px, 50px) scale(1.08); }
+  50% { transform: translate(-20px, 80px) scale(0.95); }
+  75% { transform: translate(-50px, 30px) scale(1.05); }
+}
+
+@keyframes authFloatB {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  25% { transform: translate(50px, -30px) scale(1.06); }
+  50% { transform: translate(30px, -60px) scale(0.97); }
+  75% { transform: translate(60px, -20px) scale(1.04); }
+}
+
+/* --- 卡片 --- */
 .auth-card {
-  background: var(--color-surface);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
-  padding: 40px 36px;
-  width: 400px;
-  max-width: 90vw;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-radius: 20px;
+  box-shadow:
+    0 4px 6px rgba(0, 0, 0, 0.04),
+    0 12px 32px rgba(0, 0, 0, 0.06),
+    0 24px 64px rgba(44, 62, 80, 0.08);
+  padding: 44px 40px 36px;
+  width: 420px;
+  max-width: 92vw;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  position: relative;
+  z-index: 1;
+  animation: authCardEnter 0.6s cubic-bezier(0.22, 0.61, 0.36, 1) both;
 }
 
+@keyframes authCardEnter {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* --- 卡片顶部装饰线 --- */
+.auth-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 48px;
+  height: 3px;
+  border-radius: 0 0 3px 3px;
+  background: linear-gradient(90deg, #4a90d9, #6bb5e0);
+}
+
+/* --- 头部 --- */
 .auth-card-header {
   text-align: center;
-  margin-bottom: 28px;
+  margin-bottom: 30px;
+}
+
+.auth-card-icon {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 14px;
+  background: linear-gradient(135deg, #e8f0fe 0%, #d4e4f8 100%);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  box-shadow: 0 4px 12px rgba(74, 144, 217, 0.12);
 }
 
 .auth-card-subtitle {
   font-size: 12px;
   color: var(--color-text-muted);
-  margin-bottom: 6px;
-  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  font-weight: 500;
 }
 
 .auth-card-title {
-  font-size: 22px;
+  font-size: 26px;
   font-weight: 700;
   color: var(--color-text);
+  letter-spacing: 1px;
 }
 
-/* 模式切换标签 */
+/* --- 模式切换标签 --- */
 .auth-mode-tabs {
   display: flex;
-  gap: 2px;
-  margin-bottom: 24px;
-  background: var(--color-bg);
-  border-radius: 8px;
-  padding: 3px;
+  gap: 4px;
+  margin-bottom: 28px;
+  background: #f0f3f8;
+  border-radius: 12px;
+  padding: 4px;
+  position: relative;
 }
 
 .auth-mode-tab {
   flex: 1;
-  padding: 8px 0;
+  padding: 10px 0;
   border: none;
   background: transparent;
-  border-radius: 6px;
-  font-size: 13px;
+  border-radius: 10px;
+  font-size: 14px;
   font-weight: 500;
   cursor: pointer;
   color: var(--color-text-secondary);
-  transition: all 0.15s;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  z-index: 1;
 }
 
 .auth-mode-tab.active {
   background: white;
   color: var(--color-primary);
-  box-shadow: var(--shadow-sm);
   font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
-/* 表单 */
+.auth-mode-tab:hover:not(.active) {
+  color: var(--color-text);
+  background: rgba(255, 255, 255, 0.45);
+}
+
+/* --- 表单 --- */
 .auth-form {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 16px;
+}
+
+/* --- 输入域组 --- */
+.auth-field-group {
+  position: relative;
 }
 
 .auth-field-label {
+  display: block;
   font-size: 12px;
   font-weight: 600;
   color: var(--color-text-secondary);
-  margin-bottom: 2px;
+  margin-bottom: 6px;
+  letter-spacing: 0.3px;
+}
+
+/* --- 输入框容器（带图标） --- */
+.auth-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.auth-input-icon {
+  position: absolute;
+  left: 14px;
+  font-size: 16px;
+  color: #b0b8c4;
+  pointer-events: none;
+  transition: color 0.25s;
+  z-index: 2;
 }
 
 .auth-input {
   width: 100%;
-  padding: 10px 14px;
-  border: 1.5px solid var(--color-border);
-  border-radius: var(--radius-sm);
+  padding: 12px 14px 12px 42px;
+  border: 1.5px solid #e2e5ec;
+  border-radius: 12px;
   font-size: 14px;
-  font-family: var(--font-mono);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
   outline: none;
-  transition: border-color 0.15s;
-  background: var(--color-bg);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  background: #f8f9fc;
   color: var(--color-text);
+  letter-spacing: 0.3px;
+}
+
+.auth-input::placeholder {
+  color: #c0c8d4;
+  font-size: 13px;
 }
 
 .auth-input:focus {
   border-color: var(--color-primary);
-  background: white;
+  background: #fff;
+  box-shadow: 0 0 0 4px rgba(74, 144, 217, 0.08);
+}
+
+.auth-input:focus ~ .auth-input-icon,
+.auth-input-wrapper:focus-within .auth-input-icon {
+  color: var(--color-primary);
 }
 
 .auth-input.input-error {
   border-color: var(--color-danger);
+  background: #fffafa;
 }
 
+.auth-input.input-error:focus {
+  box-shadow: 0 0 0 4px rgba(231, 76, 60, 0.08);
+}
+
+/* --- 消息条 --- */
 .auth-error-msg {
-  color: var(--color-danger);
+  color: #c0392b;
   font-size: 12px;
   text-align: center;
-  padding: 8px 12px;
-  background: #fef0f0;
-  border-radius: 6px;
-  border: 1px solid #fdd;
+  padding: 10px 14px;
+  background: #fef5f5;
+  border-radius: 10px;
+  border: 1px solid #fdd8d8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  animation: authMsgIn 0.3s ease;
 }
 
 .auth-success-msg {
   color: #1b7a3d;
   font-size: 12px;
   text-align: center;
-  padding: 8px 12px;
-  background: #eafaf1;
-  border-radius: 6px;
-  border: 1px solid #b7e4c7;
+  padding: 10px 14px;
+  background: #edfaf1;
+  border-radius: 10px;
+  border: 1px solid #c3e8d0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  animation: authMsgIn 0.3s ease;
 }
 
+@keyframes authMsgIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* --- 提交按钮 --- */
 .auth-submit-btn {
   width: 100%;
-  padding: 11px;
+  padding: 13px;
   border: none;
-  border-radius: var(--radius-sm);
-  background: var(--color-primary);
+  border-radius: 12px;
+  background: linear-gradient(135deg, #4a90d9 0%, #5da0e8 50%, #4a90d9 100%);
+  background-size: 200% 200%;
   color: white;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.15s;
-  margin-top: 4px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-top: 6px;
+  letter-spacing: 0.5px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 14px rgba(74, 144, 217, 0.3);
+}
+
+.auth-submit-btn::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
 }
 
 .auth-submit-btn:hover:not(:disabled) {
-  background: var(--color-primary-dark);
+  background-position: 100% 50%;
+  box-shadow: 0 6px 20px rgba(74, 144, 217, 0.4);
+  transform: translateY(-1px);
+}
+
+.auth-submit-btn:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(74, 144, 217, 0.3);
+}
+
+.auth-submit-btn:active:not(:disabled)::after {
+  width: 600px;
+  height: 600px;
 }
 
 .auth-submit-btn:disabled {
-  opacity: 0.5;
+  opacity: 0.55;
   cursor: not-allowed;
+  background: linear-gradient(135deg, #98b8d8 0%, #a8c8e8 100%);
+  box-shadow: none;
 }
 
-/* 底部切换文字 */
+/* --- 底部切换文字 --- */
 .auth-toggle-text {
   text-align: center;
-  font-size: 12px;
+  font-size: 13px;
   color: var(--color-text-muted);
-  margin-top: 16px;
+  margin-top: 20px;
 }
 
 .auth-toggle-link {
   color: var(--color-primary);
   cursor: pointer;
-  font-weight: 500;
-  margin-left: 2px;
+  font-weight: 600;
+  margin-left: 3px;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.auth-toggle-link::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 1.5px;
+  background: var(--color-primary);
+  transition: width 0.2s;
 }
 
 .auth-toggle-link:hover {
-  text-decoration: underline;
+  color: var(--color-primary-dark);
+}
+
+.auth-toggle-link:hover::after {
+  width: 100%;
 }
 
 /* ============================================
@@ -174,18 +529,25 @@
   .auth-page-overlay {
     padding: 16px;
     align-items: flex-start;
-    padding-top: 40px;
+    padding-top: 48px;
   }
 
   .auth-card {
-    padding: 28px 20px;
+    padding: 32px 22px 28px;
     width: 100%;
     max-width: 100%;
-    border-radius: var(--radius-md);
+    border-radius: 18px;
+  }
+
+  .auth-card-icon {
+    width: 48px;
+    height: 48px;
+    font-size: 24px;
+    border-radius: 14px;
   }
 
   .auth-card-title {
-    font-size: 18px;
+    font-size: 22px;
   }
 
   .auth-card-subtitle {
@@ -194,20 +556,48 @@
 
   .auth-input {
     font-size: 14px;
-    padding: 10px 12px;
+    padding: 11px 12px 11px 38px;
   }
 
   .auth-submit-btn {
-    padding: 12px;
-    font-size: 14px;
+    padding: 13px;
+    font-size: 15px;
   }
 
   .auth-mode-tab {
     padding: 10px 0;
-    font-size: 13px;
+    font-size: 14px;
   }
 
   .auth-form {
-    gap: 12px;
+    gap: 14px;
   }
+
+  /* 移动端减小背景装饰圆 */
+  .auth-page-overlay::before {
+    width: 260px;
+    height: 260px;
+    top: -80px;
+    right: -60px;
+  }
+
+  .auth-page-overlay::after {
+    width: 220px;
+    height: 220px;
+    bottom: -50px;
+    left: -40px;
+  }
+
+  /* 移动端缩小点阵 */
+  .auth-bg-layer {
+    background-size: 22px 22px;
+  }
+
+  /* 移动端缩小节点 */
+  .auth-bg-node-1 { width: 20px; height: 20px; top: 14%; left: 8%; }
+  .auth-bg-node-2 { width: 16px; height: 16px; top: 5%;  left: 30%; }
+  .auth-bg-node-3 { width: 24px; height: 24px; top: 7%;  left: 60%; }
+  .auth-bg-node-4 { width: 18px; height: 18px; top: 44%; left: 42%; }
+  .auth-bg-node-5 { width: 20px; height: 20px; top: 58%; left: 10%; }
+  .auth-bg-node-6 { width: 14px; height: 14px; top: 40%; left: 82%; }
 }
