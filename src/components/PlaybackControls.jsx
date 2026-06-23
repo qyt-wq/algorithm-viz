@@ -17,13 +17,25 @@ export default function PlaybackControls({
 
   const canPrev = hasSteps && currentStep > 0;
   const canNext = hasSteps && currentStep < totalSteps - 1;
+  const atEnd = hasSteps && !canNext && !isRunning;
+
+  const handlePlay = () => {
+    if (atEnd) {
+      // 最后一帧 → 从头重新播放
+      onReset?.();
+      // 使用 requestAnimationFrame 等 reset 状态落定后再切播放
+      requestAnimationFrame(() => onPlay?.());
+    } else {
+      onPlay?.();
+    }
+  };
 
   return (
     <div className={`playback-bar${compact ? ' playback-compact' : ''}`}>
       <button className="playback-btn" onClick={onReset} disabled={!hasSteps} title="重置 (R)">⏮</button>
       <button className="playback-btn" onClick={onStepBackward} disabled={!canPrev} title="上一步 (←)">◀</button>
-      <button className="playback-btn btn-play-main" onClick={onPlay} disabled={!canNext && !isRunning} title="播放/暂停 (空格)">
-        {isRunning ? '⏸' : '▶'}
+      <button className="playback-btn btn-play-main" onClick={handlePlay} disabled={!hasSteps} title={atEnd ? '重新播放 (空格)' : '播放/暂停 (空格)'}>
+        {isRunning ? '⏸' : atEnd ? '🔄' : '▶'}
       </button>
       <button className="playback-btn" onClick={onStepForward} disabled={!canNext} title="下一步 (→)">▶</button>
       {!compact && (
