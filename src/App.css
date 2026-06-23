@@ -83,6 +83,8 @@
   --color-bg: #f0f4f8;
   --color-bar-dark: #0d1f3c;
   --color-code-panel: #0c1a30;
+  --color-text-on-dark: #c0cad8;
+  --color-text-on-dark-muted: #7080a0;
 }
 
 /* 护眼绿 */
@@ -92,6 +94,8 @@
   --color-bg: #f4f7f4;
   --color-bar-dark: #1e3024;
   --color-code-panel: #1a2c1e;
+  --color-text-on-dark: #c8d4c8;
+  --color-text-on-dark-muted: #809880;
 }
 
 /* 暖橙 */
@@ -101,6 +105,8 @@
   --color-bg: #faf6f4;
   --color-bar-dark: #302018;
   --color-code-panel: #2c1c16;
+  --color-text-on-dark: #d8c8c0;
+  --color-text-on-dark-muted: #a08880;
 }
 
 /* 像素风 */
@@ -110,6 +116,8 @@
   --color-bg: #1a1a1a;
   --color-bar-dark: #111111;
   --color-code-panel: #0f0f0f;
+  --color-text-on-dark: #c0e8c0;
+  --color-text-on-dark-muted: #589858;
 }
 
 *,
