@@ -249,20 +249,16 @@ export default function DijkstraViz({ step, graphData, steps, currentIndex }) {
               const dist = step.distances?.[target];
               return (
                 <div key={target} className="dijkstra-path-row">
-                  <span className="dijkstra-path-target">{target}</span>
-                  <span className="dijkstra-path-arrow">←</span>
-                  <span className="dijkstra-path-chain">
-                    {chain.map((node, i) => (
-                      <span key={node}>
-                        <span className={`dijkstra-path-node ${node === startNode ? 'path-start' : ''}`}>
-                          {node}
-                        </span>
-                        {i < chain.length - 1 && (
-                          <span className="dijkstra-path-sep"> → </span>
-                        )}
+                  {chain.map((node, i) => (
+                    <span key={node}>
+                      <span className={`dijkstra-path-node ${node === startNode ? 'path-start' : node === target ? 'path-end' : ''}`}>
+                        {node}
                       </span>
-                    ))}
-                  </span>
+                      {i < chain.length - 1 && (
+                        <span className="dijkstra-path-sep"> → </span>
+                      )}
+                    </span>
+                  ))}
                   <span className="dijkstra-path-dist">= {dist}</span>
                 </div>
               );
