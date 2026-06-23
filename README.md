@@ -2,6 +2,7 @@
 
 > 面向数据结构、离散数学、程序设计课程学习者的交互式算法可视化实验平台
 
+[![CI](https://github.com/qyt-wq/algorithm-viz/actions/workflows/ci.yml/badge.svg)](https://github.com/qyt-wq/algorithm-viz/actions/workflows/ci.yml)
 [![React](https://img.shields.io/badge/React-18-61dafb?logo=react)](https://react.dev/)
 [![Vite](https://img.shields.io/badge/Vite-5-646cff?logo=vite)](https://vitejs.dev/)
 [![Express](https://img.shields.io/badge/Express-4-000?logo=express)](https://expressjs.com/)
