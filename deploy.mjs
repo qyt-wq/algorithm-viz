@@ -13,7 +13,7 @@ const SSH_USER = process.argv[4] || 'root';
 
 if (!SERVER_IP || !SSH_PASS) {
   console.log('用法: node deploy.mjs <服务器IP> <密码> [用户名]');
-  console.log('示例: node deploy.mjs 47.93.170.111 mypassword root');
+  console.log('示例: node deploy.mjs <服务器IP> <密码> root');
   process.exit(1);
 }
 
