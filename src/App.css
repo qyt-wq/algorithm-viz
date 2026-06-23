@@ -1339,12 +1339,12 @@ body {
 
 .bars-container {
   display: flex;
-  align-items: flex-start;
+  align-items: flex-end;
   justify-content: center;
   gap: 5px;
   height: 320px;
   width: 100%;
-  padding: 0 10px 8px;
+  padding: 8px 10px 0;
   contain: layout style;
 }
 
@@ -1361,7 +1361,7 @@ body {
 .bar {
   width: 100%;
   max-width: 44px;
-  border-radius: 0 0 4px 4px;
+  border-radius: 4px 4px 0 0;
   position: relative;
   transition: height 0.35s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.25s ease, filter 0.3s ease;
   min-height: 6px;
@@ -1370,7 +1370,7 @@ body {
 
 .bar-value {
   position: absolute;
-  bottom: -20px;
+  top: -20px;
   left: 50%;
   transform: translateX(-50%);
   font-size: 11px;
@@ -1383,8 +1383,7 @@ body {
   font-size: 10px;
   color: var(--color-text-on-dark-muted);
   font-family: var(--font-mono);
-  margin-bottom: 2px;
-  order: -1;
+  margin-top: 2px;
 }
 
 /* --- 冒泡排序 & 归并排序 共享柱状图样式 --- */
@@ -2291,7 +2290,7 @@ body {
   .bars-container {
     height: 200px;
     gap: 3px;
-    padding: 0 6px 4px;
+    padding: 4px 6px 0;
   }
 
   .bar {
@@ -2300,7 +2299,7 @@ body {
 
   .bar-value {
     font-size: 9px;
-    bottom: -16px;
+    top: -16px;
   }
 
   .bar-index {
@@ -2522,7 +2521,7 @@ body {
 
   .bar-value {
     font-size: 8px;
-    bottom: -14px;
+    top: -14px;
   }
 
   .bar-index {
