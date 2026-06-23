@@ -12,32 +12,6 @@ const COLORS = {
   edgePath: '#27ae60',
 };
 
-/**
- * 从 predecessors 回溯构造完整路径
- * @returns {{ paths: Record<string, string[]>, startNode: string }}
- */
-function buildPaths(predecessors, startNode) {
-  const paths = {};
-  for (const node of Object.keys(predecessors)) {
-    if (node === startNode) {
-      paths[node] = [node];
-      continue;
-    }
-    const chain = [];
-    let curr = node;
-    while (curr) {
-      chain.push(curr);
-      curr = predecessors[curr];
-    }
-    chain.reverse();
-    // 只有能回溯到起点的才是有效路径
-    if (chain[0] === startNode) {
-      paths[node] = chain;
-    }
-  }
-  return { paths, startNode };
-}
-
 export default function DijkstraViz({ step, graphData, steps, currentIndex }) {
   if (!graphData) return <div className="empty-viz">无图数据</div>;
 
@@ -107,29 +81,6 @@ export default function DijkstraViz({ step, graphData, steps, currentIndex }) {
     if (dist === undefined || dist === Infinity) return '∞';
     return dist;
   };
-
-  // ---- 根据 predecessors 构建所有最短路径 ----
-  const { paths, startNode } = useMemo(() => {
-    if (!step.predecessors || !steps[0]) return { paths: {}, startNode: null };
-    // 从初始步骤找到起点
-    const initStep = steps[0];
-    const startId = Object.keys(initStep.distances || {}).find(
-      (id) => initStep.distances[id] === 0
-    );
-    if (!startId) return { paths: {}, startNode: null };
-    return buildPaths(step.predecessors, startId);
-  }, [step.predecessors, steps]);
-
-  // 按距离排序的目标节点（排除起点）
-  const sortedTargets = useMemo(() => {
-    return Object.keys(paths)
-      .filter((id) => id !== startNode)
-      .sort((a, b) => {
-        const da = step.distances?.[a] ?? Infinity;
-        const db = step.distances?.[b] ?? Infinity;
-        return da - db;
-      });
-  }, [paths, startNode, step.distances]);
 
   return (
     <div className="dijkstra-viz">
@@ -236,40 +187,6 @@ export default function DijkstraViz({ step, graphData, steps, currentIndex }) {
           );
         })}
       </svg>
-
-      {/* ---- 最短路径面板（算法完成后显示） ---- */}
-      {step.type === 'complete' && sortedTargets.length > 0 && (
-        <div className="dijkstra-paths-panel">
-          <div className="dijkstra-paths-title">
-            📍 从 <strong>{startNode}</strong> 到各节点的最短路径
-          </div>
-          <div className="dijkstra-paths-list">
-            {sortedTargets.map((target) => {
-              const chain = paths[target];
-              const dist = step.distances?.[target];
-              return (
-                <div key={target} className="dijkstra-path-row">
-                  <span className="dijkstra-path-target">{target}</span>
-                  <span className="dijkstra-path-arrow">←</span>
-                  <span className="dijkstra-path-chain">
-                    {chain.map((node, i) => (
-                      <span key={node}>
-                        <span className={`dijkstra-path-node ${node === startNode ? 'path-start' : ''}`}>
-                          {node}
-                        </span>
-                        {i < chain.length - 1 && (
-                          <span className="dijkstra-path-sep"> → </span>
-                        )}
-                      </span>
-                    ))}
-                  </span>
-                  <span className="dijkstra-path-dist">= {dist}</span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
 
       {/* 图例 */}
       <div className="legend">
