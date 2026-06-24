@@ -305,15 +305,93 @@ algorithm-visualization-system/
 
 ## 🔒 环境变量
 
+### 本地开发环境
+
+在 [`server/.env`](server/.env) 中配置，`npm run server` 通过 `--env-file=server/.env` 加载：
+
 | 变量 | 默认值 | 说明 |
 |------|--------|------|
-| `DB_HOST` | localhost | MySQL 主机地址 |
-| `DB_PORT` | 3306 | MySQL 端口 |
-| `DB_USER` | root | 数据库用户名 |
-| `DB_PASSWORD` | redhat | 数据库密码 |
-| `DB_NAME` | algorithm_viz | 数据库名称 |
-| `JWT_SECRET` | — | JWT 签名密钥（生产环境务必修改） |
-| `PORT` | 3001 | 后端服务端口 |
+| `DB_HOST` | `localhost` | MySQL 主机地址（本地连接宿主机 MySQL） |
+| `DB_PORT` | `3306` | MySQL 端口 |
+| `DB_USER` | `root` | 数据库用户名 |
+| `DB_PASSWORD` | — | 数据库密码（`db.js` 默认空字符串，本地需根据实际设置） |
+| `DB_NAME` | `algorithm_viz` | 数据库名称 |
+| `JWT_SECRET` | `algorithm_viz_jwt_secret_2024` | JWT 签名密钥（代码级 fallback，仅开发用） |
+| `PORT` | `3001` | 后端 Express 监听端口 |
+
+### Docker 部署环境
+
+通过 `.env` 文件或命令行传入，`docker compose up` 自动注入容器：
+
+| 变量 | 是否必填 | Docker 默认 | 流向 | 说明 |
+|------|----------|-------------|------|------|
+| `DB_PASSWORD` | **必填** | 无（未设置则拒绝启动） | MySQL + Backend | 数据库 root 密码 |
+| `JWT_SECRET` | **必填** | 无（未设置则拒绝启动） | Backend | JWT 签名密钥 |
+| `DB_NAME` | 可选 | `algorithm_viz` | MySQL + Backend | 数据库名称，首次启动自动创建 |
+| `DB_HOST` | — | `mysql` | Backend（compose 内部注入） | 指向 compose 服务名，无需手动设 |
+| `DB_PORT` | — | `3306` | Backend（compose 内部注入） | 容器内固定 3306 |
+| `DB_USER` | — | `root` | Backend（compose 内部注入） | 容器内固定 root |
+| `PORT` | — | `3001` | Backend（compose 内部注入） | 后端容器内监听端口 |
+| `NODE_ENV` | — | `production` | Backend（compose 内部注入） | 控制日志文件落盘等生产行为 |
+
+> ⚠️ 上轮优化后 `DB_PASSWORD` 和 `JWT_SECRET` 使用 `${VAR:?错误提示}` 语法，**未设置会直接报错退出**，杜绝默认密钥上生产。
+
+**启动示例**：
+
+```bash
+# 命令行传入
+DB_PASSWORD=MySecurePass123 JWT_SECRET=my_jwt_key_2024 docker compose up -d --build
+
+# 推荐：创建 .env 文件（已在 .gitignore 中排除）
+cat > .env << 'EOF'
+DB_PASSWORD=MySecurePass123
+JWT_SECRET=my_jwt_key_2024
+DB_NAME=algorithm_viz
+EOF
+
+docker compose up -d --build
+```
+
+### 部署脚本参数
+
+[`deploy.sh`](deploy.sh) 和 [`deploy.mjs`](deploy.mjs) 接收命令行参数：
+
+| 参数 | deploy.sh | deploy.mjs | 默认值 | 说明 |
+|------|-----------|------------|--------|------|
+| 服务器 IP | `$1` | `process.argv[2]` | 必填 | 目标云服务器公网 IP |
+| SSH 密码 | — | `process.argv[3]` | 必填 | SSH 密码认证 |
+| SSH 用户名 | `$2` | `process.argv[4]` | `root` | SSH 登录用户 |
+
+```bash
+# Bash 版（SSH 密钥认证）
+bash deploy.sh 192.168.1.100 root
+
+# Node.js 版（密码认证）
+node deploy.mjs 192.168.1.100 MySSHPassword root
+```
+
+### 变量流向总图
+
+```
+┌─ .env 文件 / 命令行 ─────────────────────────────────────┐
+│                                                          │
+│  DB_PASSWORD ─────┬──► MYSQL_ROOT_PASSWORD (MySQL 容器)   │
+│                   └──► DB_PASSWORD (Backend 容器)         │
+│                                                          │
+│  DB_NAME ─────────┬──► MYSQL_DATABASE (MySQL 容器)        │
+│                   └──► DB_NAME (Backend 容器)             │
+│                                                          │
+│  JWT_SECRET ─────────► JWT_SECRET (Backend 容器)          │
+│                                                          │
+│  (compose 内部固定)                                       │
+│  DB_HOST=mysql ──────► DB_HOST (Backend → db.js)         │
+│  DB_PORT=3306 ───────► DB_PORT (Backend → db.js)         │
+│  DB_USER=root ───────► DB_USER (Backend → db.js)         │
+│  PORT=3001 ──────────► PORT (Backend → index.js)         │
+│  NODE_ENV=production ► NODE_ENV (Backend → index.js)     │
+│                                                          │
+└──────────────────────────────────────────────────────────┘
+```
 
 ---
 
