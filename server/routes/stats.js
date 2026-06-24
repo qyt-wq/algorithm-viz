@@ -56,7 +56,7 @@ router.get('/learning', authRequired, async (req, res) => {
     const userId = req.user.id;
 
     // 并行执行三条查询
-    const [[[totalRow]], algoRows, [[recentRow]], recentAll] = await Promise.all([
+    const [[[totalRow]], algoResult, recentResult] = await Promise.all([
       // 1. 总览：执行次数 + 总步骤
       pool.query(
         'SELECT COUNT(*) AS total, COALESCE(SUM(steps_count), 0) AS totalSteps FROM learning_records WHERE user_id = ?',
@@ -77,8 +77,8 @@ router.get('/learning', authRequired, async (req, res) => {
     res.json({
       total: totalRow?.total || 0,
       totalSteps: totalRow?.totalSteps || 0,
-      algorithms: algoRows[0],
-      recent: recentAll[0],
+      algorithms: algoResult[0],
+      recent: recentResult[0],
     });
   } catch (err) {
     console.error('获取学习统计失败:', err);
