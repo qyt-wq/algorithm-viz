@@ -1,6 +1,6 @@
 /**
  * 学习统计路由 — 学习记录 / 登录统计 / 数据汇总
- * 优化版：合并冗余查询 + Promise.all 并行化
+ * 优化版：合并聚合查询 + Promise.all 并行化 + 连接池友好
  */
 import express from 'express';
 import jwt from 'jsonwebtoken';
@@ -55,16 +55,19 @@ router.get('/learning', authRequired, async (req, res) => {
   try {
     const userId = req.user.id;
 
-    // 并行执行三条查询（彼此无依赖）
-    const [totalResult, algoResult, recentResult] = await Promise.all([
+    // 并行执行三条查询
+    const [[[totalRow]], algoRows, [[recentRow]], recentAll] = await Promise.all([
+      // 1. 总览：执行次数 + 总步骤
       pool.query(
         'SELECT COUNT(*) AS total, COALESCE(SUM(steps_count), 0) AS totalSteps FROM learning_records WHERE user_id = ?',
         [userId]
       ),
+      // 2. 各算法分组统计
       pool.query(
         'SELECT algorithm_id, algorithm_name, COUNT(*) AS count, COALESCE(SUM(steps_count), 0) AS totalSteps, MAX(created_at) AS lastUsed FROM learning_records WHERE user_id = ? GROUP BY algorithm_id, algorithm_name ORDER BY count DESC',
         [userId]
       ),
+      // 3. 最近记录
       pool.query(
         'SELECT id, algorithm_id, algorithm_name, steps_count, created_at FROM learning_records WHERE user_id = ? ORDER BY created_at DESC LIMIT 10',
         [userId]
@@ -72,10 +75,10 @@ router.get('/learning', authRequired, async (req, res) => {
     ]);
 
     res.json({
-      total: totalResult[0][0]?.total || 0,
-      totalSteps: totalResult[0][0]?.totalSteps || 0,
-      algorithms: algoResult[0],
-      recent: recentResult[0],
+      total: totalRow?.total || 0,
+      totalSteps: totalRow?.totalSteps || 0,
+      algorithms: algoRows[0],
+      recent: recentAll[0],
     });
   } catch (err) {
     console.error('获取学习统计失败:', err);
@@ -88,8 +91,8 @@ router.get('/login', authRequired, async (req, res) => {
   try {
     const userId = req.user.id;
 
-    // 合并 COUNT + MIN + MAX 为一条查询
-    const [summaryResult, recentResult] = await Promise.all([
+    // 合并 COUNT + MIN + MAX 为一条查询，与最近记录并行
+    const [[[summary]], recentAll] = await Promise.all([
       pool.query(
         'SELECT COUNT(*) AS totalLogins, MIN(login_at) AS firstLogin, MAX(login_at) AS lastLogin FROM login_records WHERE user_id = ?',
         [userId]
@@ -101,10 +104,10 @@ router.get('/login', authRequired, async (req, res) => {
     ]);
 
     res.json({
-      totalLogins: summaryResult[0][0]?.totalLogins || 0,
-      firstLogin: summaryResult[0][0]?.firstLogin || null,
-      lastLogin: summaryResult[0][0]?.lastLogin || null,
-      recent: recentResult[0],
+      totalLogins: summary?.totalLogins || 0,
+      firstLogin: summary?.firstLogin || null,
+      lastLogin: summary?.lastLogin || null,
+      recent: recentAll[0],
     });
   } catch (err) {
     console.error('获取登录统计失败:', err);
@@ -169,12 +172,12 @@ router.post('/heartbeat-beacon', async (req, res) => {
 router.get('/cumulative', authRequired, async (req, res) => {
   try {
     const userId = req.user.id;
-    const [rows] = await pool.query(
+    const [[row]] = await pool.query(
       'SELECT total_learning_seconds FROM user_stats WHERE user_id = ?',
       [userId]
     );
     res.json({
-      totalSeconds: rows.length > 0 ? rows[0].total_learning_seconds : 0,
+      totalSeconds: row?.total_learning_seconds || 0,
     });
   } catch (err) {
     console.error('获取累计时长失败:', err);
@@ -182,29 +185,34 @@ router.get('/cumulative', authRequired, async (req, res) => {
   }
 });
 
-// ---- GET /api/stats/summary — 综合统计概览（合并查询 + 并行优化）----
+// ---- GET /api/stats/summary — 综合统计概览 ----
+// 4 条并行查询 → 合并为 3 条（learning 子查询合并 COUNT + favorite）
 router.get('/summary', authRequired, async (req, res) => {
   try {
     const userId = req.user.id;
 
-    // 原 6 条串行查询 → 合并为 4 条并行执行
-    const [learnResult, loginResult, favResult, cumResult] = await Promise.all([
-      // 合并：学习总次数 + 算法种类数
+    // 3 路并行：合并 learning_records 两查为一条子查询
+    const [[[learnRow]], [[loginRow]], [[cumRow]]] = await Promise.all([
+      // 合并：学习总次数 + 算法种类数 + 最爱算法
       pool.query(
-        'SELECT COUNT(*) AS total, COUNT(DISTINCT algorithm_id) AS algoCount FROM learning_records WHERE user_id = ?',
-        [userId]
+        `SELECT
+           COUNT(*) AS total,
+           COUNT(DISTINCT algorithm_id) AS algoCount,
+           (SELECT algorithm_name FROM learning_records
+            WHERE user_id = ?
+            GROUP BY algorithm_name
+            ORDER BY COUNT(*) DESC LIMIT 1
+           ) AS favoriteAlgorithm
+         FROM learning_records WHERE user_id = ?`,
+        [userId, userId]
       ),
       // 合并：登录次数 + 最近登录 + 登录天数
       pool.query(
-        `SELECT COUNT(*) AS totalLogins,
-                MAX(login_at) AS lastLogin,
-                COUNT(DISTINCT DATE(login_at)) AS totalLoginDays
+        `SELECT
+           COUNT(*) AS totalLogins,
+           MAX(login_at) AS lastLogin,
+           COUNT(DISTINCT DATE(login_at)) AS totalLoginDays
          FROM login_records WHERE user_id = ?`,
-        [userId]
-      ),
-      // 最爱算法
-      pool.query(
-        'SELECT algorithm_name, COUNT(*) AS cnt FROM learning_records WHERE user_id = ? GROUP BY algorithm_name ORDER BY cnt DESC LIMIT 1',
         [userId]
       ),
       // 累计时长
@@ -215,13 +223,13 @@ router.get('/summary', authRequired, async (req, res) => {
     ]);
 
     res.json({
-      totalExecutions: learnResult[0][0]?.total || 0,
-      uniqueAlgorithms: learnResult[0][0]?.algoCount || 0,
-      totalLogins: loginResult[0][0]?.totalLogins || 0,
-      totalLoginDays: loginResult[0][0]?.totalLoginDays || 0,
-      totalLearningSeconds: cumResult[0].length > 0 ? cumResult[0][0].total_learning_seconds : 0,
-      lastLogin: loginResult[0][0]?.lastLogin || null,
-      favoriteAlgorithm: favResult[0][0]?.algorithm_name || null,
+      totalExecutions: learnRow?.total || 0,
+      uniqueAlgorithms: learnRow?.algoCount || 0,
+      totalLogins: loginRow?.totalLogins || 0,
+      totalLoginDays: loginRow?.totalLoginDays || 0,
+      totalLearningSeconds: cumRow?.total_learning_seconds || 0,
+      lastLogin: loginRow?.lastLogin || null,
+      favoriteAlgorithm: learnRow?.favoriteAlgorithm || null,
     });
   } catch (err) {
     console.error('获取统计概览失败:', err);
