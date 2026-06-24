@@ -6,19 +6,22 @@ services:
     container_name: algoviz-mysql
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-redhat}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:?请设置 DB_PASSWORD 环境变量}
       MYSQL_DATABASE: ${DB_NAME:-algorithm_viz}
     ports:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
       - ./server/init.sql:/docker-entrypoint-initdb.d/init.sql
+      # 可选：挂载备份目录到宿主机
+      - ./backups:/backups
     command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD:-redhat}"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD:?请设置 DB_PASSWORD 环境变量}"]
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 30s
 
   backend:
     build:
@@ -30,15 +33,25 @@ services:
       DB_HOST: mysql
       DB_PORT: 3306
       DB_USER: root
-      DB_PASSWORD: ${DB_PASSWORD:-redhat}
+      DB_PASSWORD: ${DB_PASSWORD:?请设置 DB_PASSWORD 环境变量}
       DB_NAME: ${DB_NAME:-algorithm_viz}
-      JWT_SECRET: ${JWT_SECRET:-algorithm_viz_jwt_secret_2024}
+      JWT_SECRET: ${JWT_SECRET:?请设置 JWT_SECRET 环境变量}
       PORT: 3001
+      NODE_ENV: production
     ports:
       - "3001:3001"
+    volumes:
+      # 持久化后端日志，便于排查问题
+      - backend_logs:/app/logs
     depends_on:
       mysql:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3001/api/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
 
   frontend:
     build:
@@ -49,7 +62,12 @@ services:
     ports:
       - "80:80"
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
 
 volumes:
   mysql_data:
+    # 标记为外部可管理，防止 docker compose down -v 误删
+    name: algoviz_mysql_data
+  backend_logs:
+    name: algoviz_backend_logs

@@ -25,7 +25,8 @@ CREATE TABLE IF NOT EXISTS learning_records (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
   INDEX idx_user_algorithm (user_id, algorithm_id),
-  INDEX idx_created_at (created_at)
+  INDEX idx_user_created (user_id, created_at),
+  INDEX idx_user_algoname (user_id, algorithm_name)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 用户学习时长统计表

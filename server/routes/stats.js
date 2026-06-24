@@ -1,5 +1,6 @@
 /**
  * 学习统计路由 — 学习记录 / 登录统计 / 数据汇总
+ * 优化版：合并冗余查询 + Promise.all 并行化
  */
 import express from 'express';
 import jwt from 'jsonwebtoken';
@@ -54,29 +55,27 @@ router.get('/learning', authRequired, async (req, res) => {
   try {
     const userId = req.user.id;
 
-    // 总执行次数、完成次数
-    const [totalRows] = await pool.query(
-      'SELECT COUNT(*) AS total, SUM(steps_count) AS totalSteps FROM learning_records WHERE user_id = ?',
-      [userId]
-    );
-
-    // 各算法执行次数
-    const [algoRows] = await pool.query(
-      'SELECT algorithm_id, algorithm_name, COUNT(*) AS count, SUM(steps_count) AS totalSteps, MAX(created_at) AS lastUsed FROM learning_records WHERE user_id = ? GROUP BY algorithm_id, algorithm_name ORDER BY count DESC',
-      [userId]
-    );
-
-    // 最近 10 条记录
-    const [recentRows] = await pool.query(
-      'SELECT id, algorithm_id, algorithm_name, steps_count, created_at FROM learning_records WHERE user_id = ? ORDER BY created_at DESC LIMIT 10',
-      [userId]
-    );
+    // 并行执行三条查询（彼此无依赖）
+    const [totalResult, algoResult, recentResult] = await Promise.all([
+      pool.query(
+        'SELECT COUNT(*) AS total, COALESCE(SUM(steps_count), 0) AS totalSteps FROM learning_records WHERE user_id = ?',
+        [userId]
+      ),
+      pool.query(
+        'SELECT algorithm_id, algorithm_name, COUNT(*) AS count, COALESCE(SUM(steps_count), 0) AS totalSteps, MAX(created_at) AS lastUsed FROM learning_records WHERE user_id = ? GROUP BY algorithm_id, algorithm_name ORDER BY count DESC',
+        [userId]
+      ),
+      pool.query(
+        'SELECT id, algorithm_id, algorithm_name, steps_count, created_at FROM learning_records WHERE user_id = ? ORDER BY created_at DESC LIMIT 10',
+        [userId]
+      ),
+    ]);
 
     res.json({
-      total: totalRows[0].total || 0,
-      totalSteps: totalRows[0].totalSteps || 0,
-      algorithms: algoRows,
-      recent: recentRows,
+      total: totalResult[0][0]?.total || 0,
+      totalSteps: totalResult[0][0]?.totalSteps || 0,
+      algorithms: algoResult[0],
+      recent: recentResult[0],
     });
   } catch (err) {
     console.error('获取学习统计失败:', err);
@@ -89,29 +88,23 @@ router.get('/login', authRequired, async (req, res) => {
   try {
     const userId = req.user.id;
 
-    // 总登录次数
-    const [countRows] = await pool.query(
-      'SELECT COUNT(*) AS total FROM login_records WHERE user_id = ?',
-      [userId]
-    );
-
-    // 首次和最近登录
-    const [timeRows] = await pool.query(
-      'SELECT MIN(login_at) AS firstLogin, MAX(login_at) AS lastLogin FROM login_records WHERE user_id = ?',
-      [userId]
-    );
-
-    // 最近 20 条登录记录
-    const [recentRows] = await pool.query(
-      'SELECT id, login_at FROM login_records WHERE user_id = ? ORDER BY login_at DESC LIMIT 20',
-      [userId]
-    );
+    // 合并 COUNT + MIN + MAX 为一条查询
+    const [summaryResult, recentResult] = await Promise.all([
+      pool.query(
+        'SELECT COUNT(*) AS totalLogins, MIN(login_at) AS firstLogin, MAX(login_at) AS lastLogin FROM login_records WHERE user_id = ?',
+        [userId]
+      ),
+      pool.query(
+        'SELECT id, login_at FROM login_records WHERE user_id = ? ORDER BY login_at DESC LIMIT 20',
+        [userId]
+      ),
+    ]);
 
     res.json({
-      totalLogins: countRows[0].total || 0,
-      firstLogin: timeRows[0].firstLogin || null,
-      lastLogin: timeRows[0].lastLogin || null,
-      recent: recentRows,
+      totalLogins: summaryResult[0][0]?.totalLogins || 0,
+      firstLogin: summaryResult[0][0]?.firstLogin || null,
+      lastLogin: summaryResult[0][0]?.lastLogin || null,
+      recent: recentResult[0],
     });
   } catch (err) {
     console.error('获取登录统计失败:', err);
@@ -123,13 +116,12 @@ router.get('/login', authRequired, async (req, res) => {
 router.post('/heartbeat', authRequired, async (req, res) => {
   try {
     const userId = req.user.id;
-    const { seconds } = req.body; // 本次增加的秒数
+    const { seconds } = req.body;
 
     if (!seconds || seconds <= 0) {
       return res.json({ success: true });
     }
 
-    // upsert：不存在则插入，存在则累加
     await pool.query(
       `INSERT INTO user_stats (user_id, total_learning_seconds)
        VALUES (?, ?)
@@ -157,7 +149,7 @@ router.post('/heartbeat-beacon', async (req, res) => {
       const decoded = jwt.verify(token, JWT_SECRET);
       userId = decoded.id;
     } catch {
-      return res.json({ success: true }); // token 无效，静默忽略
+      return res.json({ success: true });
     }
 
     await pool.query(
@@ -169,7 +161,7 @@ router.post('/heartbeat-beacon', async (req, res) => {
 
     res.json({ success: true });
   } catch {
-    res.json({ success: true }); // 永远不报错
+    res.json({ success: true });
   }
 });
 
@@ -190,45 +182,46 @@ router.get('/cumulative', authRequired, async (req, res) => {
   }
 });
 
-// ---- GET /api/stats/summary — 综合统计概览 ----
+// ---- GET /api/stats/summary — 综合统计概览（合并查询 + 并行优化）----
 router.get('/summary', authRequired, async (req, res) => {
   try {
     const userId = req.user.id;
 
-    // 并行查询所有统计
-    const [learnCount] = await pool.query(
-      'SELECT COUNT(*) AS total, COUNT(DISTINCT algorithm_id) AS algoCount FROM learning_records WHERE user_id = ?',
-      [userId]
-    );
-    const [loginCount] = await pool.query(
-      'SELECT COUNT(*) AS total FROM login_records WHERE user_id = ?',
-      [userId]
-    );
-    const [lastLogin] = await pool.query(
-      'SELECT MAX(login_at) AS lastLogin FROM login_records WHERE user_id = ?',
-      [userId]
-    );
-    const [loginDays] = await pool.query(
-      'SELECT COUNT(DISTINCT DATE(login_at)) AS days FROM login_records WHERE user_id = ?',
-      [userId]
-    );
-    const [favAlgo] = await pool.query(
-      'SELECT algorithm_name, COUNT(*) AS cnt FROM learning_records WHERE user_id = ? GROUP BY algorithm_name ORDER BY cnt DESC LIMIT 1',
-      [userId]
-    );
-    const [cumulative] = await pool.query(
-      'SELECT total_learning_seconds FROM user_stats WHERE user_id = ?',
-      [userId]
-    );
+    // 原 6 条串行查询 → 合并为 4 条并行执行
+    const [learnResult, loginResult, favResult, cumResult] = await Promise.all([
+      // 合并：学习总次数 + 算法种类数
+      pool.query(
+        'SELECT COUNT(*) AS total, COUNT(DISTINCT algorithm_id) AS algoCount FROM learning_records WHERE user_id = ?',
+        [userId]
+      ),
+      // 合并：登录次数 + 最近登录 + 登录天数
+      pool.query(
+        `SELECT COUNT(*) AS totalLogins,
+                MAX(login_at) AS lastLogin,
+                COUNT(DISTINCT DATE(login_at)) AS totalLoginDays
+         FROM login_records WHERE user_id = ?`,
+        [userId]
+      ),
+      // 最爱算法
+      pool.query(
+        'SELECT algorithm_name, COUNT(*) AS cnt FROM learning_records WHERE user_id = ? GROUP BY algorithm_name ORDER BY cnt DESC LIMIT 1',
+        [userId]
+      ),
+      // 累计时长
+      pool.query(
+        'SELECT total_learning_seconds FROM user_stats WHERE user_id = ?',
+        [userId]
+      ),
+    ]);
 
     res.json({
-      totalExecutions: learnCount[0].total || 0,
-      uniqueAlgorithms: learnCount[0].algoCount || 0,
-      totalLogins: loginCount[0].total || 0,
-      totalLoginDays: loginDays[0].days || 0,
-      totalLearningSeconds: cumulative.length > 0 ? cumulative[0].total_learning_seconds : 0,
-      lastLogin: lastLogin[0]?.lastLogin || null,
-      favoriteAlgorithm: favAlgo[0]?.algorithm_name || null,
+      totalExecutions: learnResult[0][0]?.total || 0,
+      uniqueAlgorithms: learnResult[0][0]?.algoCount || 0,
+      totalLogins: loginResult[0][0]?.totalLogins || 0,
+      totalLoginDays: loginResult[0][0]?.totalLoginDays || 0,
+      totalLearningSeconds: cumResult[0].length > 0 ? cumResult[0][0].total_learning_seconds : 0,
+      lastLogin: loginResult[0][0]?.lastLogin || null,
+      favoriteAlgorithm: favResult[0][0]?.algorithm_name || null,
     });
   } catch (err) {
     console.error('获取统计概览失败:', err);
